@@ -1,0 +1,68 @@
+import traceback
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from webdriver_manager.chrome import ChromeDriverManager
+import numpy as np
+import pandas as pd
+import time
+
+
+def scrape_sts() -> pd.DataFrame():
+    # chrome driver setup
+    options = Options()
+    options.add_argument("start-maximized")
+    driver = webdriver.Chrome(service=Service(
+        ChromeDriverManager().install()), options=options)
+
+    # load page
+    url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/ekstraklasa/184/30860/86441/'
+    driver.get(url)
+
+    # handle pop-ups
+    allow_cookies_btn = driver.find_element(
+        By.XPATH, '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]')
+    allow_cookies_btn.send_keys(Keys.ENTER)
+
+    popup_cancel_btn = driver.find_element(
+        By.XPATH, '/html/body/div[5]/div[2]/div[1]/div/div[2]/div[3]/button[1]')
+    popup_cancel_btn.send_keys(Keys.ENTER)
+
+    # initialize output DataFrame
+    df = pd.DataFrame()
+    columns = ["team_1",  "team_2", "stake_1_wins",
+               "stake_draw", "stake_2_wins", "url"]
+
+    # scrape rows
+    i = 1
+    try:
+        while (1):
+            table_row = driver.find_element(
+                By.XPATH, f'/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[{i}]/tbody/tr/td[2]/table/tbody/tr')
+            # print(table_row.text.split("\n"))
+
+            # append to DataFrame
+            lst = table_row.text.split("\n")
+            # ['Cracovia', '2.44', 'X', '3.35', 'W. Płock', '2.80']
+            dct = {"team_1": lst[0],
+                   "team_2": lst[4],
+                   "stake_1_wins": lst[1],
+                   "stake_draw": lst[3],
+                   "stake_2_wins": lst[5],
+                   "url": url}
+            df = df._append(pd.DataFrame(
+                [dct], columns=columns), ignore_index=True)
+
+            i += 1
+    except Exception as e:
+        # print(e)
+        pass
+
+    # time.sleep(100)
+    driver.quit()
+
+    # print(df.head())
+
+    return df

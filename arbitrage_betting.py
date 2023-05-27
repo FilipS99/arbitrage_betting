@@ -5,37 +5,28 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
+import numpy as np
+import pandas as pd
 import time
+from datetime import datetime
 
-# chrome driver setup
-options = Options()
-options.add_argument("start-maximized")
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+from scrape_sts import scrape_sts
+from scrape_superbet import scrape_superbet
 
+if __name__ == "__main__":
+    df = pd.DataFrame()
+    # expected columns
+    # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
-# load page
-driver.get('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/ekstraklasa/184/30860/86441/')
+    # scrape websites
+    df = df._append(scrape_sts(), ignore_index=True)
+    df = df._append(scrape_superbet(), ignore_index=True)
 
-# handle pop-ups
-allow_cookies_btn = driver.find_element(By.XPATH, '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]')
-allow_cookies_btn.send_keys(Keys.ENTER)
+    # TODO zbudowac slownik do zamiany synonimów nazw zespołów, np. Górnik Z./G. Zabrze -> Górnik Zabrze
+    # TODO zbudować logikę na wyłapanie duplikatów spotkań i wyliczenie % zysku (uwzględnić podatek)
 
-popup_cancel_btn = driver.find_element(By.XPATH, '/html/body/div[5]/div[2]/div[1]/div/div[2]/div[3]/button[1]')
-popup_cancel_btn.send_keys(Keys.ENTER)
-
-# scrape
-table_row = driver.find_element(By.XPATH, '/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[1]/tbody/tr/td[2]/table/tbody/tr')
-print(table_row.text.split("\n"))  
-i = 1
-try:
-    while(1):
-        table_row = driver.find_element(By.XPATH, f'/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[{i}]/tbody/tr/td[2]/table/tbody/tr')
-        print(table_row.text.split("\n"))          
-        i += 1
-except Exception:
-    print("Kuniec")
-
-
-
-time.sleep(100)
-driver.quit()
+    # save CSV file
+    filename = datetime.now().strftime("%Y%m%d_%H%M%S.xlsx")
+    output_path = 'D:\\Edukacja\\Projekty\\arbitrage_betting\\output\\'
+    df.to_excel(output_path+filename,
+                header=True, index=False)
