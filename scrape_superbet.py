@@ -10,15 +10,8 @@ import pandas as pd
 import time
 
 
-def scrape_superbet() -> pd.DataFrame():
-    # chrome driver setup
-    options = Options()
-    options.add_argument("start-maximized")
-    driver = webdriver.Chrome(service=Service(
-        ChromeDriverManager().install()), options=options)
-
+def scrape_superbet(driver: webdriver.Chrome(), url: str) -> pd.DataFrame():
     # load page
-    url = 'https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska'
     driver.get(url)
 
     # initialize output DataFrame
@@ -52,7 +45,6 @@ def scrape_superbet() -> pd.DataFrame():
         pass
 
     # time.sleep(100)
-    driver.quit()
 
     # print(df.head())
 

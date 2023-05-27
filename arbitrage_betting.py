@@ -12,17 +12,35 @@ from datetime import datetime
 
 from scrape_sts import scrape_sts
 from scrape_superbet import scrape_superbet
+from rename_synonyms import rename_synonyms
 
 if __name__ == "__main__":
     df = pd.DataFrame()
     # expected columns
     # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
-    # scrape websites
-    df = df._append(scrape_sts(), ignore_index=True)
-    df = df._append(scrape_superbet(), ignore_index=True)
+    # chrome driver setup
+    options = Options()
+    options.add_argument("--headless")  # opens in background
+    driver = webdriver.Chrome(options=options)
 
-    # TODO zbudowac slownik do zamiany synonimów nazw zespołów, np. Górnik Z./G. Zabrze -> Górnik Zabrze
+    # scrape websites & append to DF
+    url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/ekstraklasa/184/30860/86441/'
+    df = df._append(scrape_sts(driver, url), ignore_index=True)
+    # print("STS STS STS STS STS STS STS STS", df.head())
+
+    url = 'https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/'
+    df = df._append(scrape_superbet(driver, url), ignore_index=True)
+    # print("SUPERBET SUPERBET SUPERBET SUPERBET", df.head())
+
+    # close chrome
+    driver.quit()
+
+    print(df.head())
+    # replace synonyms (if needed)
+    df = rename_synonyms(df)
+
+    print(df.head())
     # TODO zbudować logikę na wyłapanie duplikatów spotkań i wyliczenie % zysku (uwzględnić podatek)
 
     # save CSV file

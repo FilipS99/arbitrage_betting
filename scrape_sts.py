@@ -10,25 +10,18 @@ import pandas as pd
 import time
 
 
-def scrape_sts() -> pd.DataFrame():
-    # chrome driver setup
-    options = Options()
-    options.add_argument("start-maximized")
-    driver = webdriver.Chrome(service=Service(
-        ChromeDriverManager().install()), options=options)
-
+def scrape_sts(driver: webdriver.Chrome(), url: str) -> pd.DataFrame():
     # load page
-    url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/ekstraklasa/184/30860/86441/'
     driver.get(url)
 
     # handle pop-ups
-    allow_cookies_btn = driver.find_element(
-        By.XPATH, '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]')
-    allow_cookies_btn.send_keys(Keys.ENTER)
+    # allow_cookies_btn = driver.find_element(
+    #     By.XPATH, '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]')
+    # allow_cookies_btn.send_keys(Keys.ENTER)
 
-    popup_cancel_btn = driver.find_element(
-        By.XPATH, '/html/body/div[5]/div[2]/div[1]/div/div[2]/div[3]/button[1]')
-    popup_cancel_btn.send_keys(Keys.ENTER)
+    # popup_cancel_btn = driver.find_element(
+    #     By.XPATH, '/html/body/div[5]/div[2]/div[1]/div/div[2]/div[3]/button[1]')
+    # popup_cancel_btn.send_keys(Keys.ENTER)
 
     # initialize output DataFrame
     df = pd.DataFrame()
@@ -61,7 +54,6 @@ def scrape_sts() -> pd.DataFrame():
         pass
 
     # time.sleep(100)
-    driver.quit()
 
     # print(df.head())
 
