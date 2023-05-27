@@ -25,16 +25,18 @@ def scrape_superbet(driver: webdriver.Chrome(), url: str) -> pd.DataFrame():
         while (1):
             table_row = driver.find_element(
                 By.XPATH, f'/html/body/div[1]/div/div/div[1]/div/div[2]/div/div[3]/div/div/div/div/div[1]/div/div[2]/div[{i}]')
+            #               /html/body/div[1]/div/div/div[1]/div/div[2]/div/div[3]/div/div/div/div/div[1]/div/div[2]/div[3]
+            #               /html/body/div[1]/div/div/div[1]/div/div[2]/div/div[3]/div/div/div/div/div[1]/div/div[2]/div[3]/div/div[1]/div[2]/div[2]/div
             # print(table_row.text.split("\n"))
 
             # append to DataFrame
             lst = table_row.text.split("\n")
-            # ['SOB.', '17:30', 'Raków', 'Lubin', '6305', '1.47', '1.47', '4.60', '4.60', '6.50', '6.50', '+350']
+            # ['3.06', '17:30', 'Podbeskidzie', 'Resovia', '16889', '1', '1.67', '1.67', 'X', '4.00', '4.00', '2', '5.00', '5.00', '+119']
             dct = {"team_1": lst[2],
                    "team_2": lst[3],
-                   "stake_1_wins": lst[5],
-                   "stake_draw": lst[7],
-                   "stake_2_wins": lst[9],
+                   "stake_1_wins": lst[6],
+                   "stake_draw": lst[9],
+                   "stake_2_wins": lst[12],
                    "url": url}
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
@@ -44,8 +46,23 @@ def scrape_superbet(driver: webdriver.Chrome(), url: str) -> pd.DataFrame():
         # print(e)
         pass
 
-    # time.sleep(100)
-
-    # print(df.head())
-
     return df
+
+
+# # test
+# df = pd.DataFrame()
+# # expected columns
+# # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
+
+# # chrome driver setup
+# options = Options()
+# # options.add_argument("--headless")  # opens in background
+# driver = webdriver.Chrome(options=options)
+
+
+# url = 'https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/'
+# df = df._append(scrape_superbet(driver, url), ignore_index=True)
+# print("SUPERBET SUPERBET SUPERBET SUPERBET", df.head())
+
+# # close chrome
+# driver.quit()

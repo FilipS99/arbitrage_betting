@@ -29,32 +29,58 @@ def scrape_sts(driver: webdriver.Chrome(), url: str) -> pd.DataFrame():
                "stake_draw", "stake_2_wins", "url"]
 
     # scrape rows
-    i = 1
-    try:
-        while (1):
-            table_row = driver.find_element(
-                By.XPATH, f'/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[{i}]/tbody/tr/td[2]/table/tbody/tr')
-            # print(table_row.text.split("\n"))
+    divs = ['3', '5']
+    for d in divs:
+        i = 1
+        try:
+            while (1):
+                table_row = driver.find_element(
+                    By.XPATH, f'/html/body/div[{d}]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[{i}]/tbody/tr/td[2]/table/tbody/tr')
+                #                /html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[1]/tbody/tr/td[2]/table
+                print(table_row.text.split("\n"))
 
-            # append to DataFrame
-            lst = table_row.text.split("\n")
-            # ['Cracovia', '2.44', 'X', '3.35', 'W. Płock', '2.80']
-            dct = {"team_1": lst[0],
-                   "team_2": lst[4],
-                   "stake_1_wins": lst[1],
-                   "stake_draw": lst[3],
-                   "stake_2_wins": lst[5],
-                   "url": url}
-            df = df._append(pd.DataFrame(
-                [dct], columns=columns), ignore_index=True)
+                # append to DataFrame
+                lst = table_row.text.split("\n")
+                # ['Cracovia', '2.44', 'X', '3.35', 'W. Płock', '2.80']
+                dct = {"team_1": lst[0],
+                       "team_2": lst[4],
+                       "stake_1_wins": lst[1],
+                       "stake_draw": lst[3],
+                       "stake_2_wins": lst[5],
+                       "url": url}
+                df = df._append(pd.DataFrame(
+                    [dct], columns=columns), ignore_index=True)
 
-            i += 1
-    except Exception as e:
-        # print(e)
-        pass
+                i += 1
+        except Exception as e:
+            print(e)
+            pass
 
     # time.sleep(100)
 
     # print(df.head())
 
     return df
+
+
+# # test
+# df = pd.DataFrame()
+# # expected columns
+# # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
+
+# # chrome driver setup
+# options = Options()
+# # options.add_argument("--headless")  # opens in background
+# driver = webdriver.Chrome(options=options)
+
+# url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/'
+# df = df._append(scrape_sts(driver, url), ignore_index=True)
+# print("STS STS STS", df.head())
+
+
+# url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/ekstraklasa/184/30860/86441/'
+# df = df._append(scrape_sts(driver, url), ignore_index=True)
+# print("STS STS STS", df.head())
+
+# close chrome
+# driver.quit()

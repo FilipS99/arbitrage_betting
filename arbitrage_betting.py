@@ -21,26 +21,31 @@ if __name__ == "__main__":
 
     # chrome driver setup
     options = Options()
-    options.add_argument("--headless")  # opens in background
+    # options.add_argument("--headless")  # opens in background
     driver = webdriver.Chrome(options=options)
 
     # scrape websites & append to DF
+    # liga 1
+    url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/'
+    df = df._append(scrape_sts(driver, url), ignore_index=True)
+    print("STS STS STS", df.tail())
+
+    # ekstraklasa
     url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/ekstraklasa/184/30860/86441/'
     df = df._append(scrape_sts(driver, url), ignore_index=True)
-    # print("STS STS STS STS STS STS STS STS", df.head())
+    print("STS STS STS STS STS STS STS STS", df.tail())
 
     url = 'https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/'
     df = df._append(scrape_superbet(driver, url), ignore_index=True)
-    # print("SUPERBET SUPERBET SUPERBET SUPERBET", df.head())
+    print("SUPERBET SUPERBET SUPERBET SUPERBET", df.tail())
 
     # close chrome
     driver.quit()
 
-    print(df.head())
     # replace synonyms (if needed)
     df = rename_synonyms(df)
 
-    print(df.head())
+    # print(df.head())
     # TODO zbudować logikę na wyłapanie duplikatów spotkań i wyliczenie % zysku (uwzględnić podatek)
 
     # save CSV file
