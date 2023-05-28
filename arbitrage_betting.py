@@ -37,6 +37,8 @@ if __name__ == "__main__":
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
+    # TODO OTWIERANIE STRON NA ROZNYCH TABACH I DOPIERO POTEM SCRAPING, ZEBY JS ZALADOWAL ZAWARTOSC
+
     # scrape websites & append to DF
     # lvbet liga 1
     url = 'https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37424'
