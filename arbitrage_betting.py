@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # variables
     # save CSV file
     filename_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = 'D:\\Edukacja\\Projekty\\arbitrage_betting\\output\\'
+    output_path = 'D:\\moje\python_projects\\arbitrage_betting\\output\\'
     bet_amount = 1000
 
     # setup
