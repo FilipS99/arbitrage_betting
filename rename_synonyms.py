@@ -6,13 +6,37 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
     # replace every space
     df = df.replace(' ', '', regex=True)
 
+    # upper
+    df['team_1'] = df['team_1'].str.upper()
+    df['team_2'] = df['team_2'].str.upper()
+
     # dictionary of synonym replacements
     synonyms = {
-        'G.Zabrze': 'GórnikZabrze',
-        'GórnikZ.': 'GórnikZabrze',
-        'ZagłębieLublin': 'Z.Lublin',
-        'ZagłębieL.': 'ZagłębieLublin',
-        'Lublin': 'ZagłębieLublin'
+        'G.ZABRZE': 'GÓRNIKZABRZE',
+        'GÓRNIKZ.': 'GÓRNIKZABRZE',
+        'Z.LUBLIN': 'ZAGŁĘBIELUBLIN',
+        'ZAGŁĘBIEL.': 'ZAGŁĘBIELUBLIN',
+        'LUBLIN': 'ZAGŁĘBIELUBLIN',
+        'TYCHY': 'GKSTYCHY',
+        'ARKA': 'ARKAGDYNIA',
+        'SKRACZ.': 'SKRACZĘSTOCHOWA',
+        'CHOJNICE': 'CHOJNICZANKACHOJNICE',
+        'W.KRAKÓW': 'WISŁAKRAKÓW',
+        'NIECIECZA': 'TERMALICANIECIECZA',
+        'BRUK-BETTERMALICANIECIECZA': 'TERMALICANIECIECZA',
+        'TERMALICABRUK-B.': 'TERMALICANIECIECZA',
+        'OPOLE': 'ODRAOPOLE',
+        'CHOJNICZANKA': 'CHOJNICZANKACHOJNICE',
+        'CHOJNICZANKACHO.': 'CHOJNICZANKACHOJNICE',
+        'MKSCHOJNICZANKACHOJNICE': 'CHOJNICZANKACHOJNICE',
+        'PUSZCZANIEPOŁOM.': 'PUSZCZANIEPOŁOMICE',
+        'NIEPOŁOMICE': 'PUSZCZANIEPOŁOMICE',
+        'SOSNOWIEC': 'ZAGŁĘBIESOSNOWIEC',
+        'ZAGŁĘBIESOSNOWI.': 'ZAGŁĘBIESOSNOWIEC',
+        'CWKSRESOVIA': 'RESOVIA',
+        'RESOVIARZESZÓW': 'RESOVIA',
+        'PODBESKIDZIEBIE.': 'PODBESKIDZIE',
+        'TSPODBESKIDZIEBIELSKO-BIAŁA': 'PODBESKIDZIE'
     }
 
     df = df.replace({"team_1": synonyms,

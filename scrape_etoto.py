@@ -10,14 +10,9 @@ import pandas as pd
 import time
 
 
-def scrape_superbet(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
+def scrape_etoto(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
     # load page
     driver.get(url)
-
-    # handle pop-ups
-    allow_cookies_btn = driver.find_element(
-        By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
-    allow_cookies_btn.send_keys(Keys.ENTER)
 
     # initialize output DataFrame
     df = pd.DataFrame()
@@ -25,23 +20,23 @@ def scrape_superbet(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
                "stake_draw", "stake_2_wins", "url"]
 
     # scrape rows
-    i = 3
+    i = 1
     try:
         while (1):
             table_row = driver.find_element(
-                By.XPATH, f'/html/body/div[1]/div/div/div[1]/div/div[2]/div/div[3]/div/div/div/div/div[1]/div/div[2]/div[{i}]')
-            #               /html/body/div[1]/div/div/div[1]/div/div[2]/div/div[3]/div/div/div/div/div[1]/div/div[2]/div[3]
-            #               /html/body/div[1]/div/div/div[1]/div/div[2]/div/div[3]/div/div/div/div/div[1]/div/div[2]/div[3]/div/div[1]/div[2]/div[2]/div
-            # print(table_row.text.split("\n"))
+                By.XPATH, f'/html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[2]/ul/li[{i}]/ul/li')
+            #               /html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[2]/ul/li[1]/ul/li
+            #               /html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[2]/ul/li[2]/ul/li
+            print(table_row.text.split("\n"))
 
             # append to DataFrame
             lst = table_row.text.split("\n")
-            # ['3.06', '17:30', 'Podbeskidzie', 'Resovia', '16889', '1', '1.67', '1.67', 'X', '4.00', '4.00', '2', '5.00', '5.00', '+119']
-            dct = {"team_1": lst[2],
-                   "team_2": lst[3],
-                   "stake_1_wins": lst[6],
-                   "stake_draw": lst[9],
-                   "stake_2_wins": lst[12],
+            # ['Wisła Kraków', 'Zagłębie Sosnowiec', 'Dzisiaj', '12:40', '1.20', '6.50', '13.00', '+201']
+            dct = {"team_1": lst[0],
+                   "team_2": lst[1],
+                   "stake_1_wins": lst[4],
+                   "stake_draw": lst[5],
+                   "stake_2_wins": lst[6],
                    "url": url}
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
@@ -54,7 +49,7 @@ def scrape_superbet(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
     return df
 
 
-# # test
+# # # test
 # df = pd.DataFrame()
 # # expected columns
 # # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
@@ -65,9 +60,9 @@ def scrape_superbet(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
 # driver = webdriver.Chrome(options=options)
 
 
-# url = 'https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/'
-# df = df._append(scrape_superbet(driver, url), ignore_index=True)
-# print("SUPERBET SUPERBET SUPERBET SUPERBET", df.head())
+# url = 'https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga/305'
+# df = df._append(scrape_etoto(driver, url), ignore_index=True)
+# print("ETOTO ETOTO ETOTO", df.head())
 
 # # close chrome
 # driver.quit()

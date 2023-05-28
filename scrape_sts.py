@@ -10,18 +10,18 @@ import pandas as pd
 import time
 
 
-def scrape_sts(driver: webdriver.Chrome(), url: str) -> pd.DataFrame():
+def scrape_sts(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
     # load page
     driver.get(url)
 
     # handle pop-ups
-    # allow_cookies_btn = driver.find_element(
-    #     By.XPATH, '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]')
-    # allow_cookies_btn.send_keys(Keys.ENTER)
+    allow_cookies_btn = driver.find_element(
+        By.XPATH, '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]')
+    allow_cookies_btn.send_keys(Keys.ENTER)
 
-    # popup_cancel_btn = driver.find_element(
-    #     By.XPATH, '/html/body/div[5]/div[2]/div[1]/div/div[2]/div[3]/button[1]')
-    # popup_cancel_btn.send_keys(Keys.ENTER)
+    popup_cancel_btn = driver.find_element(
+        By.XPATH, '/html/body/div[5]/div[2]/div[1]/div/div[2]/div[3]/button[1]')
+    popup_cancel_btn.send_keys(Keys.ENTER)
 
     # initialize output DataFrame
     df = pd.DataFrame()
@@ -36,8 +36,9 @@ def scrape_sts(driver: webdriver.Chrome(), url: str) -> pd.DataFrame():
             while (1):
                 table_row = driver.find_element(
                     By.XPATH, f'/html/body/div[{d}]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[{i}]/tbody/tr/td[2]/table/tbody/tr')
-                #                /html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[1]/tbody/tr/td[2]/table
-                print(table_row.text.split("\n"))
+                #               /html/body/div[3]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[1]/tbody/tr/td[2]/table
+                #               /html/body/div[3]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[2]/tbody/tr/td[2]/table
+                # print(table_row.text.split("\n"))
 
                 # append to DataFrame
                 lst = table_row.text.split("\n")
@@ -53,7 +54,7 @@ def scrape_sts(driver: webdriver.Chrome(), url: str) -> pd.DataFrame():
 
                 i += 1
         except Exception as e:
-            print(e)
+            # print(e)
             pass
 
     # time.sleep(100)
