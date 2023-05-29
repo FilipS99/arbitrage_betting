@@ -40,7 +40,9 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'ŁĘCZNA': 'GÓRNIKŁĘCZNA',
         'G.ŁĘCZNA': 'GÓRNIKŁĘCZNA',
         'SANDECJA': 'SANDECJANOWYSĄCZ',
-        'CHORZÓW': 'RUCHCHORZÓW'
+        'CHORZÓW': 'RUCHCHORZÓW',
+        'GŁOGÓW': 'CHROBRYGŁOGÓW',
+        'SANDECJANOWYSĄ.': 'SANDECJANOWYSĄCZ'
     }
 
     df = df.replace({"team_1": synonyms,

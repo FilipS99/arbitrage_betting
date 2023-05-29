@@ -10,7 +10,17 @@ import pandas as pd
 import time
 
 
-def scrape_etoto(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
+def scrape_etoto() -> pd.DataFrame():
+    # chrome driver setup
+    options = Options()
+    # options.add_argument("--headless")  # opens in background
+    options.add_argument('--ignore-certificate-errors')
+    driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(5)
+
+    # etoto 1 liga
+    url = 'https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga/305'
+
     # load page
     driver.get(url)
 
@@ -27,7 +37,7 @@ def scrape_etoto(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
                 By.XPATH, f'/html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[2]/ul/li[{i}]/ul/li')
             #               /html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[2]/ul/li[1]/ul/li
             #               /html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[2]/ul/li[2]/ul/li
-            print(table_row.text.split("\n"))
+            # print(table_row.text.split("\n"))
 
             # append to DataFrame
             lst = table_row.text.split("\n")
@@ -45,6 +55,11 @@ def scrape_etoto(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
     except Exception as e:
         # print(e)
         pass
+
+    # close chrome
+    driver.quit()
+
+    print(f"{'Etoto:':<10} {len(df)}")
 
     return df
 

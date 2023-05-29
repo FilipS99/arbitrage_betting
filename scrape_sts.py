@@ -10,18 +10,28 @@ import pandas as pd
 import time
 
 
-def scrape_sts(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
+def scrape_sts() -> pd.DataFrame():
+    # chrome driver setup
+    options = Options()
+    # options.add_argument("--headless")  # opens in background
+    options.add_argument('--ignore-certificate-errors')
+    driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(5)
+
+    # STS liga 1
+    url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/'
+
     # load page
     driver.get(url)
 
     # handle pop-ups
-    allow_cookies_btn = driver.find_element(
-        By.XPATH, '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]')
-    allow_cookies_btn.send_keys(Keys.ENTER)
+    # allow_cookies_btn = driver.find_element(
+    #     By.XPATH, '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]')
+    # allow_cookies_btn.send_keys(Keys.ENTER)
 
-    popup_cancel_btn = driver.find_element(
-        By.XPATH, '/html/body/div[5]/div[2]/div[1]/div/div[2]/div[3]/button[1]')
-    popup_cancel_btn.send_keys(Keys.ENTER)
+    # popup_cancel_btn = driver.find_element(
+    #     By.XPATH, '/html/body/div[5]/div[2]/div[1]/div/div[2]/div[3]/button[1]')
+    # popup_cancel_btn.send_keys(Keys.ENTER)
 
     # initialize output DataFrame
     df = pd.DataFrame()
@@ -57,9 +67,10 @@ def scrape_sts(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
             # print(e)
             pass
 
-    # time.sleep(100)
+    # close chrome
+    driver.quit()
 
-    # print(df.head())
+    print(f"{'STS:':<10} {len(df)}")
 
     return df
 

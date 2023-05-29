@@ -10,14 +10,24 @@ import pandas as pd
 import time
 
 
-def scrape_superbet(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
+def scrape_superbet() -> pd.DataFrame():
+    # chrome driver setup
+    options = Options()
+    # options.add_argument("--headless")  # opens in background
+    options.add_argument('--ignore-certificate-errors')
+    driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(5)
+
+    # SUPERBET
+    url = 'https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/'
+
     # load page
     driver.get(url)
 
     # handle pop-ups
-    allow_cookies_btn = driver.find_element(
-        By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
-    allow_cookies_btn.send_keys(Keys.ENTER)
+    # allow_cookies_btn = driver.find_element(
+    #     By.XPATH, '//*[@id="onetrust-accept-btn-handler"]')
+    # allow_cookies_btn.send_keys(Keys.ENTER)
 
     # initialize output DataFrame
     df = pd.DataFrame()
@@ -50,6 +60,11 @@ def scrape_superbet(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
     except Exception as e:
         # print(e)
         pass
+
+    # close chrome
+    driver.quit()
+
+    print(f"{'Superbet:':<10} {len(df)}")
 
     return df
 

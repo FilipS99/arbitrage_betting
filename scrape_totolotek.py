@@ -10,18 +10,28 @@ import pandas as pd
 import time
 
 
-def scrape_totolotek(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
+def scrape_totolotek() -> pd.DataFrame():
+    # chrome driver setup
+    options = Options()
+    # options.add_argument("--headless")  # opens in background
+    options.add_argument('--ignore-certificate-errors')
+    driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(5)
+    
+    # totolotek 1 liga
+    url = 'https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga'
+
     # load page
     driver.get(url)
 
     # handle pop-ups
-    allow_cookies_btn = driver.find_element(
-        By.XPATH, '//*[@id="cookiescript_accept"]')
-    allow_cookies_btn.send_keys(Keys.ENTER)
+    # allow_cookies_btn = driver.find_element(
+    #     By.XPATH, '//*[@id="cookiescript_accept"]')
+    # allow_cookies_btn.send_keys(Keys.ENTER)
 
-    popup_age_btn = driver.find_element(
-        By.XPATH, '//*[@id="ByModalContentConfirmButton"]')
-    popup_age_btn.send_keys(Keys.ENTER)
+    # popup_age_btn = driver.find_element(
+    #     By.XPATH, '//*[@id="ByModalContentConfirmButton"]')
+    # popup_age_btn.send_keys(Keys.ENTER)
 
     # initialize output DataFrame
     df = pd.DataFrame()
@@ -36,7 +46,7 @@ def scrape_totolotek(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
                 By.XPATH, f'/html/body/app-root/div/web-layout/div[1]/div/section/div/home-page/section/div/games-list/div/gamelist/div/div/div[{i}]/game/div')
             #               /html/body/app-root/div/web-layout/div[1]/div/section/div/home-page/section/div/games-list/div/gamelist/div/div/div[1]/game/div
             #               /html/body/app-root/div/web-layout/div[1]/div/section/div/home-page/section/div/games-list/div/gamelist/div/div/div[2]/game/div
-            print(table_row.text.split("\n"))
+            # print(table_row.text.split("\n"))
 
             # append to DataFrame
             lst = table_row.text.split("\n")
@@ -55,9 +65,10 @@ def scrape_totolotek(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
         # print(e)
         pass
 
-    # time.sleep(100)
+    # close chrome
+    driver.quit()
 
-    # print(df.head())
+    print(f"{'Totolotek:':<10} {len(df)}")
 
     return df
 

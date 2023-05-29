@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import time
 from datetime import datetime
+import threading
 
 from scrape_sts import scrape_sts
 from scrape_superbet import scrape_superbet
@@ -17,6 +18,18 @@ from scrape_totolotek import scrape_totolotek
 from scrape_lvbet import scrape_lvbet
 from rename_synonyms import rename_synonyms
 from calculate_bets_outcomes import calculate_bets_outcomes
+
+
+# overriding Thread so I can access outputs
+class ScrapeThread(threading.Thread):
+    def __init__(self, target_func):
+        super().__init__()
+        self.target_func = target_func
+        self.result = None
+
+    def run(self):
+        self.result = self.target_func()
+
 
 if __name__ == "__main__":
     # variables
@@ -31,51 +44,42 @@ if __name__ == "__main__":
     # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
     # chrome driver setup
-    options = Options()
-    # options.add_argument("--headless")  # opens in background
-    options.add_argument('--ignore-certificate-errors')
-    driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(5)
+    # options = Options()
+    # # options.add_argument("--headless")  # opens in background
+    # options.add_argument('--ignore-certificate-errors')
+    # driver = webdriver.Chrome(options=options)
+    # driver.implicitly_wait(3)
 
-    # TODO OTWIERANIE STRON NA ROZNYCH TABACH I DOPIERO POTEM SCRAPING, ZEBY JS ZALADOWAL ZAWARTOSC
+    # Create thread objects for each function
+    thread1 = ScrapeThread(target_func=scrape_totolotek)
+    thread2 = ScrapeThread(target_func=scrape_etoto)
+    thread3 = ScrapeThread(target_func=scrape_superbet)
+    thread4 = ScrapeThread(target_func=scrape_sts)
+    thread5 = ScrapeThread(target_func=scrape_lvbet)
+
+    # Start the threads
+    thread1.start()
+    thread2.start()
+    thread3.start()
+    thread4.start()
+    thread5.start()
+
+    # Wait for the threads to complete
+    thread1.join()
+    thread2.join()
+    thread3.join()
+    thread4.join()
+    thread5.join()
+
+    print("All threads have finished executing")
+    
+    # Merge threds outputs
+    df = pd.concat([thread1.result, thread2.result, thread3.result, thread4.result, thread5.result], ignore_index=True)
+
 
     # scrape websites & append to DF
-    # lvbet liga 1
-    url = 'https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37424'
-    df = df._append(scrape_lvbet(driver, url), ignore_index=True)
-    print("LVBET LVBET LVBET LVBET\n", df.tail())
-    print("")
-
-    # totolotek 1 liga
-    url = 'https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga'
-    df = df._append(scrape_totolotek(driver, url), ignore_index=True)
-    print("TOTOLOTEK TOTOLOTEK TOTOLOTEK\n", df.tail())
-    print("")
-
-    # etoto 1 liga
-    url = 'https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga/305'
-    df = df._append(scrape_etoto(driver, url), ignore_index=True)
-    print("ETOTO ETOTO ETOTO\n", df.tail())
-    print("")
-
-    # STS liga 1
-    url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/'
-    df = df._append(scrape_sts(driver, url), ignore_index=True)
-    print("STS STS STS\n", df.tail())
-    print("")
-
-    # # STS ekstraklasa
-    # url = 'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/ekstraklasa/184/30860/86441/'
-    # df = df._append(scrape_sts(driver, url), ignore_index=True)
-    # print("STS STS STS STS STS STS STS STS\n", df.tail())
-
-    url = 'https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/'
-    df = df._append(scrape_superbet(driver, url), ignore_index=True)
-    print("SUPERBET SUPERBET SUPERBET SUPERBET\n", df.tail())
-    print("")
-
-    # close chrome
-    driver.quit()
+    # df = df._append(scrape_lvbet(driver, url), ignore_index=True)
+    
 
     # replace synonyms (if needed)
     df = rename_synonyms(df)
@@ -86,3 +90,4 @@ if __name__ == "__main__":
     # save scraped data
     df.to_excel(output_path+filename_datetime+"_scraped.xlsx",
                 header=True, index=False)
+

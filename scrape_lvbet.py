@@ -10,7 +10,17 @@ import pandas as pd
 import time
 
 
-def scrape_lvbet(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
+def scrape_lvbet() -> pd.DataFrame():
+    # chrome driver setup
+    options = Options()
+    # options.add_argument("--headless")  # opens in background
+    options.add_argument('--ignore-certificate-errors')
+    driver = webdriver.Chrome(options=options)
+    driver.implicitly_wait(5)
+
+    # lvbet liga 1
+    url = 'https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37424'
+
     # load page
     driver.get(url)
 
@@ -38,7 +48,7 @@ def scrape_lvbet(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
                     By.XPATH, f'/html/body/app-root/main-site-container/div[2]/div/div/pre-matches/section/selected-sports-view/selected-sports-view-container/div/div/div[{d}]/div[2]/match-row[{i}]/div')
                 #               /html/body/app-root/main-site-container/div[2]/div/div/pre-matches/section/selected-sports-view/selected-sports-view-container/div/div/div[2]/div[2]/match-row[1]/div
                 #               /html/body/app-root/main-site-container/div[2]/div/div/pre-matches/section/selected-sports-view/selected-sports-view-container/div/div/div[3]/div[2]/match-row/div
-                print(table_row.text.split("\n"))
+                # print(table_row.text.split("\n"))
 
                 # append to DataFrame
                 lst = table_row.text.split("\n")
@@ -57,9 +67,10 @@ def scrape_lvbet(driver: webdriver.Chrome, url: str) -> pd.DataFrame():
             # print(e)
             pass
 
-    # time.sleep(100)
+    # close chrome
+    driver.quit()
 
-    # print(df.head())
+    print(f"{'Lvbet:':<10} {len(df)}")
 
     return df
 
