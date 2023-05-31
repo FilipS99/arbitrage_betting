@@ -16,6 +16,7 @@ from scrape_superbet import scrape_superbet
 from scrape_etoto import scrape_etoto
 from scrape_totolotek import scrape_totolotek
 from scrape_lvbet import scrape_lvbet
+from scrape_fuksiarz import scrape_fuksiarz
 from rename_synonyms import rename_synonyms
 from calculate_bets_outcomes import calculate_bets_outcomes
 
@@ -56,6 +57,7 @@ if __name__ == "__main__":
     thread3 = ScrapeThread(target_func=scrape_superbet)
     thread4 = ScrapeThread(target_func=scrape_sts)
     thread5 = ScrapeThread(target_func=scrape_lvbet)
+    thread6 = ScrapeThread(target_func=scrape_fuksiarz)
 
     # Start the threads
     thread1.start()
@@ -63,6 +65,7 @@ if __name__ == "__main__":
     thread3.start()
     thread4.start()
     thread5.start()
+    thread6.start()
 
     # Wait for the threads to complete
     thread1.join()
@@ -70,11 +73,12 @@ if __name__ == "__main__":
     thread3.join()
     thread4.join()
     thread5.join()
+    thread6.join()
 
     print("All threads have finished executing")
     
     # Merge threds outputs
-    df = pd.concat([thread1.result, thread2.result, thread3.result, thread4.result, thread5.result], ignore_index=True)
+    df = pd.concat([thread1.result, thread2.result, thread3.result, thread4.result, thread5.result, thread6.result], ignore_index=True)
 
 
     # scrape websites & append to DF

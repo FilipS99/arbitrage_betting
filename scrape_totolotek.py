@@ -24,46 +24,35 @@ def scrape_totolotek() -> pd.DataFrame():
     # load page
     driver.get(url)
 
-    # handle pop-ups
-    # allow_cookies_btn = driver.find_element(
-    #     By.XPATH, '//*[@id="cookiescript_accept"]')
-    # allow_cookies_btn.send_keys(Keys.ENTER)
-
-    # popup_age_btn = driver.find_element(
-    #     By.XPATH, '//*[@id="ByModalContentConfirmButton"]')
-    # popup_age_btn.send_keys(Keys.ENTER)
-
     # initialize output DataFrame
     df = pd.DataFrame()
     columns = ["team_1",  "team_2", "stake_1_wins",
                "stake_draw", "stake_2_wins", "url"]
+    
+    # time.sleep(5)
 
-    # scrape rows
-    i = 1
-    try:
-        while (1):
-            table_row = driver.find_element(
-                By.XPATH, f'/html/body/app-root/div/web-layout/div[1]/div/section/div/home-page/section/div/games-list/div/gamelist/div/div/div[{i}]/game/div')
-            #               /html/body/app-root/div/web-layout/div[1]/div/section/div/home-page/section/div/games-list/div/gamelist/div/div/div[1]/game/div
-            #               /html/body/app-root/div/web-layout/div[1]/div/section/div/home-page/section/div/games-list/div/gamelist/div/div/div[2]/game/div
-            # print(table_row.text.split("\n"))
+    # get table elements of every polish football league (on the same page)
+    table_elements = driver.find_elements(
+                    By.CLASS_NAME, 'gamelist__event')
+    
+    for table_element in table_elements:
+        # split row into seperate items  
+        item = table_element.text.split("\n")
+        
+        # if invalid data - skip 
+        if len(item) < 10 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
+            print("Totolotek: Error appending - " + " | ".join(item))
+            continue
 
-            # append to DataFrame
-            lst = table_row.text.split("\n")
-            # ['Wisła Kraków', 'Zagłębie Sosnowi.', 'Niedz. 28.05', '12:40', '1', '1.25', 'X', '5.20', '2', '8.87', '1X', '1.01', '12', '1.09', 'X2', '3.25', '0:1', '1', '1.78', 'X', '3.70', '2', '3.25', '+29']
-            dct = {"team_1": lst[0],
-                   "team_2": lst[1],
-                   "stake_1_wins": lst[5],
-                   "stake_draw": lst[7],
-                   "stake_2_wins": lst[9],
-                   "url": url}
-            df = df._append(pd.DataFrame(
-                [dct], columns=columns), ignore_index=True)
-
-            i += 1
-    except Exception as e:
-        # print(e)
-        pass
+        # append item
+        dct = {"team_1": item[0],
+                "team_2": item[1],
+                "stake_1_wins": item[5],
+                "stake_draw": item[7],
+                "stake_2_wins": item[9],
+                "url": url}
+        df = df._append(pd.DataFrame(
+            [dct], columns=columns), ignore_index=True)
 
     # close chrome
     driver.quit()
@@ -73,20 +62,11 @@ def scrape_totolotek() -> pd.DataFrame():
     return df
 
 
-# # test
+# test
+# expected columns
+# ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
+
 # df = pd.DataFrame()
-# # expected columns
-# # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
-
-# # chrome driver setup
-# options = Options()
-# # options.add_argument("--headless")  # opens in background
-# driver = webdriver.Chrome(options=options)
-# driver.implicitly_wait(5)
-
-# url = 'https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga'
-# df = df._append(scrape_totolotek(driver, url), ignore_index=True)
+# df = df._append(scrape_totolotek(), ignore_index=True)
 # print(df.head())
 
-# # close chrome
-# driver.quit()

@@ -40,13 +40,18 @@ def scrape_etoto() -> pd.DataFrame():
             # print(table_row.text.split("\n"))
 
             # append to DataFrame
-            lst = table_row.text.split("\n")
+            item = table_row.text.split("\n")
+
+            if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
+                print("Etoto: Error appending - " + " | ".join(item))
+                continue
+
             # ['Wisła Kraków', 'Zagłębie Sosnowiec', 'Dzisiaj', '12:40', '1.20', '6.50', '13.00', '+201']
-            dct = {"team_1": lst[0],
-                   "team_2": lst[1],
-                   "stake_1_wins": lst[4],
-                   "stake_draw": lst[5],
-                   "stake_2_wins": lst[6],
+            dct = {"team_1": item[0],
+                   "team_2": item[1],
+                   "stake_1_wins": item[4],
+                   "stake_draw": item[5],
+                   "stake_2_wins": item[6],
                    "url": url}
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
@@ -65,19 +70,9 @@ def scrape_etoto() -> pd.DataFrame():
 
 
 # # # test
-# df = pd.DataFrame()
 # # expected columns
 # # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
-# # chrome driver setup
-# options = Options()
-# # options.add_argument("--headless")  # opens in background
-# driver = webdriver.Chrome(options=options)
-
-
-# url = 'https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga/305'
-# df = df._append(scrape_etoto(driver, url), ignore_index=True)
+# df = pd.DataFrame()
+# df = df._append(scrape_etoto(), ignore_index=True)
 # print("ETOTO ETOTO ETOTO", df.head())
-
-# # close chrome
-# driver.quit()
