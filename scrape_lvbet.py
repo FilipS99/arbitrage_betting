@@ -14,6 +14,7 @@ def scrape_lvbet() -> pd.DataFrame():
     # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
+    options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)

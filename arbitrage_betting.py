@@ -17,6 +17,7 @@ from scrape_etoto import scrape_etoto
 from scrape_totolotek import scrape_totolotek
 from scrape_lvbet import scrape_lvbet
 from scrape_fuksiarz import scrape_fuksiarz
+from scrape_forbet import scrape_forbet
 from rename_synonyms import rename_synonyms
 from calculate_bets_outcomes import calculate_bets_outcomes
 
@@ -44,20 +45,14 @@ if __name__ == "__main__":
     # expected columns
     # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
-    # chrome driver setup
-    # options = Options()
-    # # options.add_argument("--headless")  # opens in background
-    # options.add_argument('--ignore-certificate-errors')
-    # driver = webdriver.Chrome(options=options)
-    # driver.implicitly_wait(3)
-
     # Create thread objects for each function
-    thread1 = ScrapeThread(target_func=scrape_totolotek)
+    thread1 = ScrapeThread(target_func=scrape_fuksiarz)
     thread2 = ScrapeThread(target_func=scrape_etoto)
     thread3 = ScrapeThread(target_func=scrape_superbet)
     thread4 = ScrapeThread(target_func=scrape_sts)
     thread5 = ScrapeThread(target_func=scrape_lvbet)
-    thread6 = ScrapeThread(target_func=scrape_fuksiarz)
+    thread6 = ScrapeThread(target_func=scrape_totolotek)
+    thread7 = ScrapeThread(target_func=scrape_forbet)
 
     # Start the threads
     thread1.start()
@@ -66,6 +61,7 @@ if __name__ == "__main__":
     thread4.start()
     thread5.start()
     thread6.start()
+    thread7.start()
 
     # Wait for the threads to complete
     thread1.join()
@@ -74,11 +70,12 @@ if __name__ == "__main__":
     thread4.join()
     thread5.join()
     thread6.join()
+    thread7.join()
 
     print("All threads have finished executing")
     
     # Merge threds outputs
-    df = pd.concat([thread1.result, thread2.result, thread3.result, thread4.result, thread5.result, thread6.result], ignore_index=True)
+    df = pd.concat([thread1.result, thread2.result, thread3.result, thread4.result, thread5.result, thread6.result, thread7.result], ignore_index=True)
 
 
     # scrape websites & append to DF

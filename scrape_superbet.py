@@ -14,6 +14,7 @@ def scrape_superbet() -> pd.DataFrame():
     # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
+    options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
@@ -33,21 +34,23 @@ def scrape_superbet() -> pd.DataFrame():
     table_elements = driver.find_elements(
                     By.CLASS_NAME, 'event-row__layout')
     
+    
     for table_element in table_elements:
         # split row into seperate items  
         item = table_element.text.split("\n")
+        # ['SOB.', '17:30', 'Niepołomice', 'Głogów', '2448', '1.47', '1.47', '4.50', '4.50', '6.50', '6.50', '+129']
         
         # if invalid data - skip 
-        if len(item) < 13 or not item[6].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric() or not item[12].replace(".", "").isnumeric():
+        if len(item) < 12 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
             print("SuperBet: Error appending - " + " | ".join(item))
             continue
 
         # append item
         dct = {"team_1": item[2],
                 "team_2": item[3],
-                "stake_1_wins": item[6],
-                "stake_draw": item[9],
-                "stake_2_wins": item[12],
+                "stake_1_wins": item[5],
+                "stake_draw": item[7],
+                "stake_2_wins": item[9],
                 "url": url}
         df = df._append(pd.DataFrame(
             [dct], columns=columns), ignore_index=True)
@@ -61,9 +64,9 @@ def scrape_superbet() -> pd.DataFrame():
 
 
 # # # test
-# df = pd.DataFrame()
-# # expected columns
-# # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
+# expected columns
+# ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
+# df = pd.DataFrame()
 # df = df._append(scrape_superbet(), ignore_index=True)
 # print(df.head())

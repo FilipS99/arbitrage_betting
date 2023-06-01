@@ -14,45 +14,49 @@ def scrape_totolotek() -> pd.DataFrame():
     # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
+    options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
-    
-    # totolotek 1 liga
-    url = 'https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga'
-
-    # load page
-    driver.get(url)
 
     # initialize output DataFrame
     df = pd.DataFrame()
     columns = ["team_1",  "team_2", "stake_1_wins",
-               "stake_draw", "stake_2_wins", "url"]
+            "stake_draw", "stake_2_wins", "url"]
     
-    # time.sleep(5)
+    # totolotek 1 liga
+    urls = ['https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga',
+            'https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-2',    
+            'https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-1']
 
-    # get table elements of every polish football league (on the same page)
-    table_elements = driver.find_elements(
-                    By.CLASS_NAME, 'gamelist__event')
-    
-    for table_element in table_elements:
-        # split row into seperate items  
-        item = table_element.text.split("\n")
+    for url in urls:
+        # load page
+        driver.get(url)
         
-        # if invalid data - skip 
-        if len(item) < 10 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
-            print("Totolotek: Error appending - " + " | ".join(item))
-            continue
+        time.sleep(5)
 
-        # append item
-        dct = {"team_1": item[0],
-                "team_2": item[1],
-                "stake_1_wins": item[5],
-                "stake_draw": item[7],
-                "stake_2_wins": item[9],
-                "url": url}
-        df = df._append(pd.DataFrame(
-            [dct], columns=columns), ignore_index=True)
+        # get table elements of every polish football league (on the same page)
+        table_elements = driver.find_elements(
+                        By.XPATH, '/html/body/app-root/div/web-layout/div[1]/div/section/div/home-page/section/div/games-list/div/gamelist/div/div/div[*]/game/div')
+        
+        for table_element in table_elements:
+            # split row into seperate items  
+            item = table_element.text.split("\n")
+            
+            # if invalid data - skip 
+            if len(item) < 10 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
+                print("Totolotek: Error appending - " + " | ".join(item))
+                continue
+
+            # append item
+            dct = {"team_1": item[0],
+                    "team_2": item[1],
+                    "stake_1_wins": item[5],
+                    "stake_draw": item[7],
+                    "stake_2_wins": item[9],
+                    "url": url}
+            df = df._append(pd.DataFrame(
+                [dct], columns=columns), ignore_index=True)
 
     # close chrome
     driver.quit()

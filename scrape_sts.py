@@ -14,13 +14,14 @@ def scrape_sts() -> pd.DataFrame():
     # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
+    options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
     # liga 1 i 2
-    urls = ['https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/',
-            'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/2-liga/184/30860/86439/']
+    urls = ['https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/']
+            # ,'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/2-liga/184/30860/86439/']
     
     # initialize output DataFrame
     df = pd.DataFrame()
