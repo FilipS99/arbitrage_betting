@@ -65,7 +65,7 @@ def scrape_sts() -> pd.DataFrame():
     # close chrome
     driver.quit()
 
-    print(f"{'STS:':<10} {len(df)}")
+    # print(f"{'STS:':<10} {len(df)}")
 
     return df
 

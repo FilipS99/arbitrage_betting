@@ -83,7 +83,7 @@ def scrape_fuksiarz() -> pd.DataFrame():
     # close chrome
     driver.quit()
 
-    print(f"{'Fuksiarz:':<10} {len(df)}")
+    # print(f"{'Fuksiarz:':<10} {len(df)}")
 
     return df
 

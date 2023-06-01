@@ -58,7 +58,7 @@ def scrape_superbet() -> pd.DataFrame():
     # close chrome
     driver.quit()
 
-    print(f"{'Superbet:':<10} {len(df)}")
+    # print(f"{'Superbet:':<10} {len(df)}")
 
     return df
 

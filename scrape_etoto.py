@@ -20,7 +20,7 @@ def scrape_etoto() -> pd.DataFrame():
     driver.implicitly_wait(5)
 
     # etoto 1 liga
-    url = 'https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga/305'
+    url = 'https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga,4-liga-dolnoslaska-(baraz-o-iii-lige),4-liga-opolska,4-liga-podkarpacka/305,15462,15332,15473'
 
     # load page
     driver.get(url)
@@ -31,41 +31,30 @@ def scrape_etoto() -> pd.DataFrame():
                "stake_draw", "stake_2_wins", "url"]
 
     # scrape rows
-    i = 1
-    try:
-        while (1):
-            table_row = driver.find_element(
-                By.XPATH, f'/html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[2]/ul/li[{i}]/ul/li')
-            #               /html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[2]/ul/li[1]/ul/li
-            #               /html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[2]/ul/li[2]/ul/li
-            # print(table_row.text.split("\n"))
+    elements = driver.find_elements(By.XPATH,'/html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li') 
 
-            # append to DataFrame
-            item = table_row.text.split("\n")
-
-            if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
-                print("Etoto: Error appending - " + " | ".join(item))
-                continue
-
-            # ['Wisła Kraków', 'Zagłębie Sosnowiec', 'Dzisiaj', '12:40', '1.20', '6.50', '13.00', '+201']
-            dct = {"team_1": item[0],
+    for element in elements:
+        item = element.text.split('\n')
+        
+        # if invalid data - skip 
+        if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
+            print("Etoto: Error appending - " + " | ".join(item))
+            continue
+        
+        # append item
+        dct = {"team_1": item[0],
                    "team_2": item[1],
                    "stake_1_wins": item[4],
                    "stake_draw": item[5],
                    "stake_2_wins": item[6],
                    "url": url}
-            df = df._append(pd.DataFrame(
-                [dct], columns=columns), ignore_index=True)
-
-            i += 1
-    except Exception as e:
-        # print(e)
-        pass
+        df = df._append(pd.DataFrame(
+            [dct], columns=columns), ignore_index=True)
 
     # close chrome
     driver.quit()
 
-    print(f"{'Etoto:':<10} {len(df)}")
+    # print(f"{'Etoto:':<10} {len(df)}")
 
     return df
 

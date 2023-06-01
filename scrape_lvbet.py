@@ -56,7 +56,7 @@ def scrape_lvbet() -> pd.DataFrame():
     # close chrome
     driver.quit()
 
-    print(f"{'Lvbet:':<10} {len(df)}")
+    # print(f"{'Lvbet:':<10} {len(df)}")
 
     return df
 

@@ -41,17 +41,27 @@ def calculate_bets_outcomes(df: pd.DataFrame, amount: float, output_path: str, f
     df_new['total_implied_prob'] = 1. / df_new['stake_1_wins'] + \
         1. / df_new['stake_draw'] + 1. / df_new['stake_2_wins']
 
-    # Calculate tbet taxed_amounts
-    df_new['bet_win_1'] = taxed_amount / \
+    # Calculate bet taxed_amounts
+    df_new['bet_win_1_taxed_amount'] = taxed_amount / \
         (1+df_new['stake_1_wins']/df_new['stake_draw'] +
          df_new['stake_1_wins']/df_new['stake_2_wins'])
-    df_new['bet_win_2'] = taxed_amount / \
-        (1+df_new['stake_draw']/df_new['stake_1_wins'] +
-         df_new['stake_draw']/df_new['stake_2_wins'])
-    df_new['bet_draw'] = taxed_amount/(1+df_new['stake_2_wins'] /
-                                       df_new['stake_draw']+df_new['stake_2_wins']/df_new['stake_1_wins'])
+    df_new['bet_win_2_taxed_amount'] = taxed_amount / \
+        (1+df_new['stake_2_wins']/df_new['stake_1_wins'] +
+         df_new['stake_2_wins']/df_new['stake_draw'])
+    df_new['bet_draw_taxed_amount'] = taxed_amount/(1+df_new['stake_draw'] /
+                                       df_new['stake_1_wins']+df_new['stake_draw']/df_new['stake_2_wins'])
 
-    df_new['profit'] = df_new['bet_win_1'] * df_new['stake_1_wins'] - amount
+    # Calculate bet pre taxed amounts
+    df_new['bet_win_1_untaxed_amount'] = amount / \
+        (1+df_new['stake_1_wins']/df_new['stake_draw'] +
+         df_new['stake_1_wins']/df_new['stake_2_wins'])
+    df_new['bet_win_2_untaxed_amount'] = amount / \
+        (1+df_new['stake_2_wins']/df_new['stake_1_wins'] +
+         df_new['stake_2_wins']/df_new['stake_draw'])
+    df_new['bet_draw_untaxed_amount'] = amount/(1+df_new['stake_draw'] /
+                                       df_new['stake_1_wins']+df_new['stake_draw']/df_new['stake_2_wins'])
+
+    df_new['profit'] = df_new['bet_win_1_taxed_amount'] * df_new['stake_1_wins'] - amount
 
     df_new = df_new.sort_values('profit', ascending=False)
 

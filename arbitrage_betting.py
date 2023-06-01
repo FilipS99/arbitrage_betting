@@ -73,7 +73,14 @@ if __name__ == "__main__":
     thread7.join()
 
     print("All threads have finished executing")
-    
+    print(f"{'Fuksiarz:':<10} {len(thread1.result)}")
+    print(f"{'Etoto:':<10} {len(thread2.result)}")
+    print(f"{'Superbet:':<10} {len(thread3.result)}")
+    print(f"{'STS:':<10} {len(thread4.result)}")
+    print(f"{'Lvbet:':<10} {len(thread5.result)}")
+    print(f"{'Totolotek:':<10} {len(thread6.result)}")
+    print(f"{'ForBet:':<10} {len(thread7.result)}")
+
     # Merge threds outputs
     df = pd.concat([thread1.result, thread2.result, thread3.result, thread4.result, thread5.result, thread6.result, thread7.result], ignore_index=True)
 

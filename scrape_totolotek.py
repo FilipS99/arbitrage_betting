@@ -61,7 +61,7 @@ def scrape_totolotek() -> pd.DataFrame():
     # close chrome
     driver.quit()
 
-    print(f"{'Totolotek:':<10} {len(df)}")
+    # print(f"{'Totolotek:':<10} {len(df)}")
 
     return df
 

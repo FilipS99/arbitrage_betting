@@ -83,7 +83,7 @@ def scrape_forbet() -> pd.DataFrame():
     # close chrome
     driver.quit()
 
-    print(f"{'ForBet:':<10} {len(df)}")
+    # print(f"{'ForBet:':<10} {len(df)}")
 
     return df
 
