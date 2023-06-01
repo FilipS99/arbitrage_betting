@@ -25,6 +25,8 @@ def scrape_superbet() -> pd.DataFrame():
     # load page
     driver.get(url)
 
+    time.sleep(5)
+
     # initialize output DataFrame
     df = pd.DataFrame()
     columns = ["team_1",  "team_2", "stake_1_wins",

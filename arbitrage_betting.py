@@ -46,38 +46,43 @@ if __name__ == "__main__":
     # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
     # Create thread objects for each function
-    thread1 = ScrapeThread(target_func=scrape_fuksiarz)
-    thread2 = ScrapeThread(target_func=scrape_etoto)
+    thread1 = ScrapeThread(target_func=scrape_sts)
+    thread2 = ScrapeThread(target_func=scrape_lvbet)
     thread3 = ScrapeThread(target_func=scrape_superbet)
-    thread4 = ScrapeThread(target_func=scrape_sts)
-    thread5 = ScrapeThread(target_func=scrape_lvbet)
+    thread4 = ScrapeThread(target_func=scrape_fuksiarz)
+    thread5 = ScrapeThread(target_func=scrape_etoto)
     thread6 = ScrapeThread(target_func=scrape_totolotek)
     thread7 = ScrapeThread(target_func=scrape_forbet)
 
-    # Start the threads
+    # sts/lvbet taking longest
     thread1.start()
     thread2.start()
+
     thread3.start()
     thread4.start()
     thread5.start()
-    thread6.start()
-    thread7.start()
 
-    # Wait for the threads to complete
-    thread1.join()
-    thread2.join()
     thread3.join()
     thread4.join()
     thread5.join()
+
+    thread6.start()
+    thread7.start()
+
     thread6.join()
     thread7.join()
+    
+    # sts/lvbet taking longest
+    thread1.join()
+    thread2.join()
 
+    print("\n-----------------------------------\n")
     print("All threads have finished executing")
-    print(f"{'Fuksiarz:':<10} {len(thread1.result)}")
-    print(f"{'Etoto:':<10} {len(thread2.result)}")
+    print(f"{'STS:':<10} {len(thread1.result)}")
+    print(f"{'Lvbet:':<10} {len(thread2.result)}")
     print(f"{'Superbet:':<10} {len(thread3.result)}")
-    print(f"{'STS:':<10} {len(thread4.result)}")
-    print(f"{'Lvbet:':<10} {len(thread5.result)}")
+    print(f"{'Fuksiarz:':<10} {len(thread4.result)}")
+    print(f"{'Etoto:':<10} {len(thread5.result)}")
     print(f"{'Totolotek:':<10} {len(thread6.result)}")
     print(f"{'ForBet:':<10} {len(thread7.result)}")
 
