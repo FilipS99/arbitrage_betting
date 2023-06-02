@@ -12,7 +12,7 @@ import time
 
 def scrape_sts() -> pd.DataFrame():
 
-    # liga 1 i 2
+    # ligii polskie
     urls = ['https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/',
             'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/2-liga/184/30860/86439/',
             'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-i/184/30860/86447/',

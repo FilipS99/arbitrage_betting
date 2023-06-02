@@ -18,6 +18,7 @@ from scrape_totolotek import scrape_totolotek
 from scrape_lvbet import scrape_lvbet
 from scrape_fuksiarz import scrape_fuksiarz
 from scrape_forbet import scrape_forbet
+from scrape_fortuna import scrape_fortuna
 from rename_synonyms import rename_synonyms
 from calculate_bets_outcomes import calculate_bets_outcomes
 
@@ -53,6 +54,7 @@ if __name__ == "__main__":
     thread5 = ScrapeThread(target_func=scrape_etoto)
     thread6 = ScrapeThread(target_func=scrape_totolotek)
     thread7 = ScrapeThread(target_func=scrape_forbet)
+    thread8 = ScrapeThread(target_func=scrape_fortuna)
 
     # sts/lvbet taking longest
     thread1.start()
@@ -68,9 +70,11 @@ if __name__ == "__main__":
 
     thread6.start()
     thread7.start()
+    thread8.start()
 
     thread6.join()
     thread7.join()
+    thread8.join()
     
     # sts/lvbet taking longest
     thread1.join()
@@ -85,9 +89,10 @@ if __name__ == "__main__":
     print(f"{'Etoto:':<10} {len(thread5.result)}")
     print(f"{'Totolotek:':<10} {len(thread6.result)}")
     print(f"{'ForBet:':<10} {len(thread7.result)}")
+    print(f"{'Fortuna:':<10} {len(thread8.result)}")
 
     # Merge threds outputs
-    df = pd.concat([thread1.result, thread2.result, thread3.result, thread4.result, thread5.result, thread6.result, thread7.result], ignore_index=True)
+    df = pd.concat([thread1.result, thread2.result, thread3.result, thread4.result, thread5.result, thread6.result, thread7.result, thread8.result], ignore_index=True)
 
 
     # scrape websites & append to DF
