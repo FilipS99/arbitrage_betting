@@ -21,6 +21,7 @@ from scrape_forbet import scrape_forbet
 from scrape_fortuna import scrape_fortuna
 from scrape_betfan import scrape_betfan
 from scrape_betclic import scrape_betclic
+from scrape_totalbet import scrape_totalbet
 from rename_synonyms import rename_synonyms
 from calculate_bets_outcomes import calculate_bets_outcomes
 
@@ -59,6 +60,7 @@ if __name__ == "__main__":
     thread_fortuna = ScrapeThread(target_func=scrape_fortuna)
     thread_betfan = ScrapeThread(target_func=scrape_betfan)
     thread_betclic = ScrapeThread(target_func=scrape_betclic)
+    thread_totalbet = ScrapeThread(target_func=scrape_totalbet)
 
     # sts/lvbet taking longest
     thread_sts.start()
@@ -82,9 +84,11 @@ if __name__ == "__main__":
     
     thread_betfan.start()
     thread_betclic.start()
+    thread_totalbet.start()
 
     thread_betfan.join()
     thread_betclic.join()
+    thread_totalbet.join()
 
     # sts/lvbet taking longest
     thread_sts.join()
@@ -102,12 +106,13 @@ if __name__ == "__main__":
     print(f"{'Fortuna:':<10} {len(thread_fortuna.result)}")
     print(f"{'BetFan:':<10} {len(thread_betfan.result)}")
     print(f"{'BetClic:':<10} {len(thread_betclic.result)}")
+    print(f"{'TotalBet:':<10} {len(thread_totalbet.result)}")
 
     # Merge threds outputs
     df = pd.concat([thread_sts.result, thread_lvbet.result, thread_superbet.result, 
                     thread_fuksiarz.result, thread_etoto.result, thread_totolotek.result, 
                     thread_forbet.result, thread_fortuna.result, thread_betfan.result,
-                    thread_betclic.result], ignore_index=True)
+                    thread_betclic.result, thread_totalbet.result], ignore_index=True)
 
     # replace synonyms 
     df = rename_synonyms(df)
