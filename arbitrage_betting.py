@@ -20,6 +20,7 @@ from scrape_fuksiarz import scrape_fuksiarz
 from scrape_forbet import scrape_forbet
 from scrape_fortuna import scrape_fortuna
 from scrape_betfan import scrape_betfan
+from scrape_betclic import scrape_betclic
 from rename_synonyms import rename_synonyms
 from calculate_bets_outcomes import calculate_bets_outcomes
 
@@ -48,60 +49,65 @@ if __name__ == "__main__":
     # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
     # Create thread objects for each function
-    thread1 = ScrapeThread(target_func=scrape_sts)
-    thread2 = ScrapeThread(target_func=scrape_lvbet)
-    thread3 = ScrapeThread(target_func=scrape_superbet)
-    thread4 = ScrapeThread(target_func=scrape_fuksiarz)
-    thread5 = ScrapeThread(target_func=scrape_etoto)
-    thread6 = ScrapeThread(target_func=scrape_totolotek)
-    thread7 = ScrapeThread(target_func=scrape_forbet)
-    thread8 = ScrapeThread(target_func=scrape_fortuna)
-    thread9 = ScrapeThread(target_func=scrape_betfan)
+    thread_sts = ScrapeThread(target_func=scrape_sts)
+    thread_lvbet = ScrapeThread(target_func=scrape_lvbet)
+    thread_superbet = ScrapeThread(target_func=scrape_superbet)
+    thread_fuksiarz = ScrapeThread(target_func=scrape_fuksiarz)
+    thread_etoto = ScrapeThread(target_func=scrape_etoto)
+    thread_totolotek = ScrapeThread(target_func=scrape_totolotek)
+    thread_forbet = ScrapeThread(target_func=scrape_forbet)
+    thread_fortuna = ScrapeThread(target_func=scrape_fortuna)
+    thread_betfan = ScrapeThread(target_func=scrape_betfan)
+    thread_betclic = ScrapeThread(target_func=scrape_betclic)
 
     # sts/lvbet taking longest
-    thread1.start()
-    thread2.start()
+    thread_sts.start()
+    thread_lvbet.start()
 
-    thread3.start()
-    thread4.start()
-    thread5.start()
+    thread_superbet.start()
+    thread_fuksiarz.start()
+    thread_etoto.start()
 
-    thread3.join()
-    thread4.join()
-    thread5.join()
+    thread_superbet.join()
+    thread_fuksiarz.join()
+    thread_etoto.join()
 
-    thread6.start()
-    thread7.start()
-    thread8.start()
+    thread_totolotek.start()
+    thread_forbet.start()
+    thread_fortuna.start()
 
-    thread6.join()
-    thread7.join()
-    thread8.join()
+    thread_totolotek.join()
+    thread_forbet.join()
+    thread_fortuna.join()
     
-    thread9.start()
+    thread_betfan.start()
+    thread_betclic.start()
 
-    thread9.join()
+    thread_betfan.join()
+    thread_betclic.join()
 
     # sts/lvbet taking longest
-    thread1.join()
-    thread2.join()
+    thread_sts.join()
+    thread_lvbet.join()
 
     print("\n-----------------------------------\n")
     print("All threads have finished executing")
-    print(f"{'STS:':<10} {len(thread1.result)}")
-    print(f"{'Lvbet:':<10} {len(thread2.result)}")
-    print(f"{'Superbet:':<10} {len(thread3.result)}")
-    print(f"{'Fuksiarz:':<10} {len(thread4.result)}")
-    print(f"{'Etoto:':<10} {len(thread5.result)}")
-    print(f"{'Totolotek:':<10} {len(thread6.result)}")
-    print(f"{'ForBet:':<10} {len(thread7.result)}")
-    print(f"{'Fortuna:':<10} {len(thread8.result)}")
-    print(f"{'BetFan:':<10} {len(thread9.result)}")
+    print(f"{'STS:':<10} {len(thread_sts.result)}")
+    print(f"{'Lvbet:':<10} {len(thread_lvbet.result)}")
+    print(f"{'Superbet:':<10} {len(thread_superbet.result)}")
+    print(f"{'Fuksiarz:':<10} {len(thread_fuksiarz.result)}")
+    print(f"{'Etoto:':<10} {len(thread_etoto.result)}")
+    print(f"{'Totolotek:':<10} {len(thread_totolotek.result)}")
+    print(f"{'ForBet:':<10} {len(thread_forbet.result)}")
+    print(f"{'Fortuna:':<10} {len(thread_fortuna.result)}")
+    print(f"{'BetFan:':<10} {len(thread_betfan.result)}")
+    print(f"{'BetClic:':<10} {len(thread_betclic.result)}")
 
     # Merge threds outputs
-    df = pd.concat([thread1.result, thread2.result, thread3.result, 
-                    thread4.result, thread5.result, thread6.result, 
-                    thread7.result, thread8.result, thread9.result], ignore_index=True)
+    df = pd.concat([thread_sts.result, thread_lvbet.result, thread_superbet.result, 
+                    thread_fuksiarz.result, thread_etoto.result, thread_totolotek.result, 
+                    thread_forbet.result, thread_fortuna.result, thread_betfan.result,
+                    thread_betclic.result], ignore_index=True)
 
     # replace synonyms 
     df = rename_synonyms(df)

@@ -34,7 +34,6 @@ def scrape_fortuna() -> pd.DataFrame():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
-    # Chrome instance in nested, since STS blocks quick page changes with Captcha
     for url in urls:
         # load page
         driver.get(url)     
