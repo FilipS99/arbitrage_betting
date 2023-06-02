@@ -19,6 +19,7 @@ from scrape_lvbet import scrape_lvbet
 from scrape_fuksiarz import scrape_fuksiarz
 from scrape_forbet import scrape_forbet
 from scrape_fortuna import scrape_fortuna
+from scrape_betfan import scrape_betfan
 from rename_synonyms import rename_synonyms
 from calculate_bets_outcomes import calculate_bets_outcomes
 
@@ -35,7 +36,7 @@ class ScrapeThread(threading.Thread):
 
 
 if __name__ == "__main__":
-    # variables
+    start_time = time.time()
     # save CSV file
     filename_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_path = 'D:\\moje\python_projects\\arbitrage_betting\\output\\'
@@ -55,6 +56,7 @@ if __name__ == "__main__":
     thread6 = ScrapeThread(target_func=scrape_totolotek)
     thread7 = ScrapeThread(target_func=scrape_forbet)
     thread8 = ScrapeThread(target_func=scrape_fortuna)
+    thread9 = ScrapeThread(target_func=scrape_betfan)
 
     # sts/lvbet taking longest
     thread1.start()
@@ -76,6 +78,10 @@ if __name__ == "__main__":
     thread7.join()
     thread8.join()
     
+    thread9.start()
+
+    thread9.join()
+
     # sts/lvbet taking longest
     thread1.join()
     thread2.join()
@@ -90,16 +96,14 @@ if __name__ == "__main__":
     print(f"{'Totolotek:':<10} {len(thread6.result)}")
     print(f"{'ForBet:':<10} {len(thread7.result)}")
     print(f"{'Fortuna:':<10} {len(thread8.result)}")
+    print(f"{'BetFan:':<10} {len(thread9.result)}")
 
     # Merge threds outputs
-    df = pd.concat([thread1.result, thread2.result, thread3.result, thread4.result, thread5.result, thread6.result, thread7.result, thread8.result], ignore_index=True)
+    df = pd.concat([thread1.result, thread2.result, thread3.result, 
+                    thread4.result, thread5.result, thread6.result, 
+                    thread7.result, thread8.result, thread9.result], ignore_index=True)
 
-
-    # scrape websites & append to DF
-    # df = df._append(scrape_lvbet(driver, url), ignore_index=True)
-    
-
-    # replace synonyms (if needed)
+    # replace synonyms 
     df = rename_synonyms(df)
 
     # generate all possible bets combinations
@@ -108,4 +112,8 @@ if __name__ == "__main__":
     # save scraped data
     df.to_excel(output_path+filename_datetime+"_scraped.xlsx",
                 header=True, index=False)
+    
+    end_time = time.time()
+    execution_time = end_time - start_time
 
+    print("Execution time:", round(execution_time, 2), "seconds")
