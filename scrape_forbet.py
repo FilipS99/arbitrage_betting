@@ -13,7 +13,8 @@ import time
 
 def scrape_forbet() -> pd.DataFrame():
     # links
-    links = [('https://www.iforbet.pl/zaklady-bukmacherskie/320', 'polish football')]
+    links = [('https://www.iforbet.pl/zaklady-bukmacherskie/320', 'polish football'),
+             ('https://www.iforbet.pl/zaklady-bukmacherskie/139', 'finland football')]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",
@@ -94,8 +95,6 @@ def scrape_forbet() -> pd.DataFrame():
 
 
 # # # test
-# # # expected columns
-# # # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
 # df = pd.DataFrame()
 # df = df._append(scrape_forbet(), ignore_index=True)

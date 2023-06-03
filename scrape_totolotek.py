@@ -12,9 +12,12 @@ import time
 
 def scrape_totolotek() -> pd.DataFrame():    
     # totolotek 1 liga
-    links = [('https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga', 'polish football'),
-             ('https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-2', 'polish football'),    
-             ('https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-1', 'polish football')]
+    links = [
+        # ('https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga', 'polish football'),
+        #      ('https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-2', 'polish football'),    
+        #      ('https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-1', 'polish football')
+            ('https://www.totolotek.pl/pl/pilka-nozna/polska', 'polish football'),
+            ('https://www.totolotek.pl/pl/pilka-nozna/finlandia', 'finland football')]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",
@@ -36,13 +39,41 @@ def scrape_totolotek() -> pd.DataFrame():
         # load page
         driver.get(url)
         
+        # in case of 'stale' elements
         time.sleep(3)
 
-        # get table elements of every polish football league (on the same page)
-        table_elements = driver.find_elements(
+        # find elements until each is loaded
+        last_elements_count = 0
+        current_elements_count = -1       
+        while last_elements_count != current_elements_count:
+            last_elements_count = current_elements_count
+            # get table elements of every league (on the same page)
+            table_elements = driver.find_elements(
                         By.XPATH, '/html/body/app-root/div/web-layout/div[1]/div/section/div/home-page/section/div/games-list/div/gamelist/div/div/div[*]/game/div')
+            current_elements_count = len(table_elements)
+            
+            # scroll to last loaded element
+            driver.execute_script("arguments[0].scrollIntoView(false);", table_elements[-1])
         
         for table_element in table_elements:
+            # Get initial element position
+            initial_position = table_element.location["y"]
+            while True:
+                # Scroll to the element's bottom position
+                driver.execute_script("arguments[0].scrollIntoView(false);", table_element)
+                
+                # Wait for a short interval to allow content to load
+                # time.sleep(0.1)
+                
+                # Calculate the new element position after scrolling
+                new_position = table_element.location["y"]
+                
+                # Break the loop if the element's position remains the same (reached the bottom)
+                if new_position == initial_position:
+                    break
+                
+                # Update the last recorded position
+                initial_position = new_position
             # split row into seperate items  
             item = table_element.text.split("\n")
             
@@ -71,10 +102,7 @@ def scrape_totolotek() -> pd.DataFrame():
 
 
 # test
-# expected columns
-# ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
 # df = pd.DataFrame()
 # df = df._append(scrape_totolotek(), ignore_index=True)
 # print(df.head())
-

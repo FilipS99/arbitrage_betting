@@ -11,13 +11,10 @@ import time
 
 
 def scrape_sts() -> pd.DataFrame():
-    links = [('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/', 'polish football'),
-            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/2-liga/184/30860/86439/', 'polish football'),
-            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-i/184/30860/86447/', 'polish football'),
-            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-ii/184/30860/86604/', 'polish football'),
-            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-iii/184/30860/86450/', 'polish football'),
-            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-iv/184/30860/86449/', 'polish football'),
-            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/4-liga-podkarpacka/184/30860/86664/', 'polish football')]
+    links = [
+            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/184/30860/', 'polish football'),
+            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/finlandia/184/30891/', 'finland football')
+            ]
     
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",
@@ -41,9 +38,30 @@ def scrape_sts() -> pd.DataFrame():
         driver.get(url)     
 
         # get table elements of every polish football league (on the same page)
-        table_elements = driver.find_elements(By.XPATH, '/html/body/div[*]/div[2]/div[6]/div[5]/div[2]/div[2]/div/table[*]/tbody/tr/td[2]/table/tbody/tr')
+        table_elements = driver.find_elements(By.XPATH, '/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div/div/table[*]/tbody/tr/td[2]/table/tbody/tr')
 
         for table_element in table_elements:
+            # Get initial element position
+            initial_position = table_element.location["y"]
+
+            # Scroll loop - until element is visible
+            while True:
+                # Scroll to the element's bottom position
+                driver.execute_script("arguments[0].scrollIntoView(false);", table_element)
+                
+                # Wait for a short interval to allow content to load
+                # time.sleep(0.1)
+                
+                # Calculate the new element position after scrolling
+                new_position = table_element.location["y"]
+                
+                # Break the loop if the element's position remains the same (reached the bottom)
+                if new_position == initial_position:
+                    break
+                
+                # Update the last recorded position
+                initial_position = new_position
+
             item = table_element.text.split("\n")
             # ['Nieciecza', '2.01', 'X', '3.55', 'Arka', '3.50']
 
@@ -73,10 +91,6 @@ def scrape_sts() -> pd.DataFrame():
 
 
 # # test
-# # expected columns
-# # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
-
-
 
 # df = pd.DataFrame()
 # df = df._append(scrape_sts(), ignore_index=True)

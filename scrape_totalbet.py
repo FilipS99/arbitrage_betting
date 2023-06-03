@@ -12,7 +12,8 @@ import time
 
 def scrape_totalbet() -> pd.DataFrame():
     # ligii polskie
-    links = [('https://totalbet.pl/sports/events/Pilka-nozna/7486,7489,12232,13951,13952,14272,39304,39305,39308,39309,39310,39311,39312,39313,39314,39315,39316,39317,39318,39319,39320,39321,41738,41739/1', 'polish football')]
+    links = [('https://totalbet.pl/sports/events/Pilka-nozna/7486,7489,12232,13951,13952,14272,39304,39305,39308,39309,39310,39311,39312,39313,39314,39315,39316,39317,39318,39319,39320,39321,41738,41739/1', 'polish football'),
+             ('https://totalbet.pl/sports/events/Pilka-nozna/7269,7270,7272,7273,7274/1', 'finland football')]
     
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",
@@ -34,8 +35,11 @@ def scrape_totalbet() -> pd.DataFrame():
         # load page
         driver.get(url)     
 
+        # in case of 'stale' elements
+        time.sleep(3)
+
         # get table elements of every polish football league (on the same page)
-        table_elements = driver.find_elements(By.XPATH, '/html/body/div[4]/div[2]/div[3]/div/div/div[3]/partial[3]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li')
+        table_elements = driver.find_elements(By.XPATH, '/html/body/div[*]/div[2]/div[3]/div/div/div[3]/partial[3]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li')
                                                          
         for table_element in table_elements:
             # Get initial element position
@@ -43,6 +47,9 @@ def scrape_totalbet() -> pd.DataFrame():
             while True:
                 # Scroll to the element's bottom position
                 driver.execute_script("arguments[0].scrollIntoView(false);", table_element)
+                
+                # Wait for a short interval to allow content to load
+                # time.sleep(0.1)
                 
                 # Calculate the new element position after scrolling
                 new_position = table_element.location["y"]
@@ -81,10 +88,6 @@ def scrape_totalbet() -> pd.DataFrame():
 
 
 # # test
-# # expected columns
-# # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
-
-
 
 # df = pd.DataFrame()
 # df = df._append(scrape_totalbet(), ignore_index=True)

@@ -12,13 +12,14 @@ import time
 
 def scrape_superbet() -> pd.DataFrame():
     # SUPERBET
-    links = [('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/', 'polish football')]
+    links = [('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/', 'polish football'),
+             ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/finlandia', 'finland football')]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
-    
+
     # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
@@ -34,7 +35,8 @@ def scrape_superbet() -> pd.DataFrame():
         # load page
         driver.get(url)
 
-        # time.sleep(5)
+        # in case of 'stale' elements
+        time.sleep(3)
         
         # get table elements of every polish football league (on the same page)
         table_elements = driver.find_elements(
@@ -42,6 +44,27 @@ def scrape_superbet() -> pd.DataFrame():
         
         
         for table_element in table_elements:
+            # Get initial element position
+            initial_position = table_element.location["y"]
+
+            # Scroll loop - until element is visible
+            while True:
+                # Scroll to the element's bottom position
+                driver.execute_script("arguments[0].scrollIntoView(false);", table_element)
+                
+                # Wait for a short interval to allow content to load
+                # time.sleep(0.1)
+                
+                # Calculate the new element position after scrolling
+                new_position = table_element.location["y"]
+                
+                # Break the loop if the element's position remains the same (reached the bottom)
+                if new_position == initial_position:
+                    break
+                
+                # Update the last recorded position
+                initial_position = new_position
+
             # split row into seperate items  
             item = table_element.text.split("\n")
             # ['SOB.', '17:30', 'Niepołomice', 'Głogów', '2448', '1.47', '1.47', '4.50', '4.50', '6.50', '6.50', '+129']
@@ -71,8 +94,6 @@ def scrape_superbet() -> pd.DataFrame():
 
 
 # # # test
-# expected columns
-# ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
 # df = pd.DataFrame()
 # df = df._append(scrape_superbet(), ignore_index=True)

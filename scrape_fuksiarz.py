@@ -13,7 +13,8 @@ import time
 
 def scrape_fuksiarz() -> pd.DataFrame():
     # links
-    links = [('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga-polska,3-liga-gr-i,2-liga-polska,3-liga-gr-ii,3-liga-gr-iii,3-liga-gr-iv,4-liga,regionalny-puchar-polski/517,602,537,594,575,597,1294,179592/1', 'polish football')]
+    links = [('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga-polska,3-liga-gr-i,2-liga-polska,3-liga-gr-ii,3-liga-gr-iii,3-liga-gr-iv,4-liga,regionalny-puchar-polski/517,602,537,594,575,597,1294,179592/1', 'polish football'),
+             ('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/finlandia/1-liga,2-liga,3-liga/693,912,144998/1', 'finland football')]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",
@@ -100,4 +101,3 @@ def scrape_fuksiarz() -> pd.DataFrame():
 # df = pd.DataFrame()
 # df = df._append(scrape_fuksiarz(), ignore_index=True)
 # print(df.head())
-

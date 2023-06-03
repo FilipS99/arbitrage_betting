@@ -17,7 +17,12 @@ def scrape_fortuna() -> pd.DataFrame():
             ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-i', 'polish football'),
             ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-ii', 'polish football'),
             ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iii', 'polish football'),
-            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iv', 'polish football')]
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iv', 'polish football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-finlandia', 'finland football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-finlandia', 'finland football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-a', 'finland football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-b', 'finland football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-c', 'finland football')]
     
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",
@@ -68,16 +73,10 @@ def scrape_fortuna() -> pd.DataFrame():
     # close chrome
     driver.quit()
 
-    # print(f"{'STS:':<10} {len(df)}")
-
     return df
 
 
 # # test
-# # expected columns
-# # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
-
-
 
 # df = pd.DataFrame()
 # df = df._append(scrape_fortuna(), ignore_index=True)

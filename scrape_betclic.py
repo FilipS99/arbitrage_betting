@@ -11,17 +11,25 @@ import time
 
 
 def scrape_betclic() -> pd.DataFrame():
-    # ligii polskie
-    links = [('https://www.betclic.pl/pilka-nozna-s1/polska-1-liga-c1749', 'polish football'),
-            ('https://www.betclic.pl/pilka-nozna-s1/polska-2-liga-c2836', 'polish football'),
-            ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-2-c22093', 'polish football'),
-            ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-1-c22012', 'polish football'),
-            ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-podkarpacka-c25999', 'polish football'),
-            ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-zachodniopomorska-c26010', 'polish football'),
-            ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-3-c22107', 'polish football'),
-            ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-4-c21798', 'polish football'),
-            ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-kujawsko-pomorska-c25994', 'polish football'),
-            ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-swietokrzyska-c26007', 'polish football')]
+    # links
+    links = [
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-1-liga-c1749', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-2-liga-c2836', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-2-c22093', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-1-c22012', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-podkarpacka-c25999', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-zachodniopomorska-c26010', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-3-c22107', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-4-c21798', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-kujawsko-pomorska-c25994', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-swietokrzyska-c26007', 'polish football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-1-liga-c146', 'finland football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kolmonen-c21892', 'finland football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-2-liga-c494', 'finland football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-a-c7467', 'finland football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-b-c7468', 'finland football'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-c-c7469', 'finland football')
+            ]
     
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",

@@ -12,7 +12,8 @@ import time
 
 def scrape_etoto() -> pd.DataFrame():
     # links
-    links = [('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga,4-liga-dolnoslaska-(baraz-o-iii-lige),4-liga-opolska,4-liga-podkarpacka/305,15462,15332,15473', 'polish football')]
+    links = [('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga,4-liga-dolnoslaska-(baraz-o-iii-lige),4-liga-opolska,4-liga-podkarpacka/305,15462,15332,15473', 'polish football'),
+             ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/finlandia/veikkausliiga,ykkonen,kakkonen-itainen,kakkonen-lantinen,kakkonen-pohjoinen/240,289,349,390,366', 'finland football')]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",
@@ -65,9 +66,7 @@ def scrape_etoto() -> pd.DataFrame():
 
 
 # # # test
-# # expected columns
-# # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
 
 # df = pd.DataFrame()
 # df = df._append(scrape_etoto(), ignore_index=True)
-# print("ETOTO ETOTO ETOTO", df.head())
+# print(df.head())
