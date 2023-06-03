@@ -11,22 +11,20 @@ import time
 
 
 def scrape_fortuna() -> pd.DataFrame():
-
-    # ligii polskie
-    urls = ['https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/fortuna-1-liga-polska',
-            'https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-polska',
-            'https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-i',
-            'https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-ii',
-            'https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iii',
-            'https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iv']
-    
+    # links
+    links = [('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/fortuna-1-liga-polska', 'polish football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-polska', 'polish football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-i', 'polish football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-ii', 'polish football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iii', 'polish football'),
+            ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iv', 'polish football')]
     
     # initialize output DataFrame
-    df = pd.DataFrame()
     columns = ["team_1",  "team_2", "stake_1_wins",
-            "stake_draw", "stake_2_wins", "url"]
+            "stake_draw", "stake_2_wins", "url", "category"]
+    df = pd.DataFrame({}, columns=columns)
     
-    #   chrome driver setup
+    # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
     options.add_argument("--start-maximized")
@@ -34,7 +32,10 @@ def scrape_fortuna() -> pd.DataFrame():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
-    for url in urls:
+    for link in links:
+        # unpack tuple
+        url, category = link
+
         # load page
         driver.get(url)     
 
@@ -55,11 +56,12 @@ def scrape_fortuna() -> pd.DataFrame():
 
             # append item
             dct = {"team_1": teams[0],
-                    "team_2": teams[1],
-                    "stake_1_wins": item[1],
-                    "stake_draw": item[2],
-                    "stake_2_wins": item[3],
-                    "url": url}
+                   "team_2": teams[1],
+                   "stake_1_wins": item[1],
+                   "stake_draw": item[2],
+                   "stake_2_wins": item[3],
+                   "url": url,
+                   "category": category}
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

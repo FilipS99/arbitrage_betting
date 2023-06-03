@@ -11,6 +11,14 @@ import time
 
 
 def scrape_lvbet() -> pd.DataFrame():
+    # lvbet polska piłka nożna
+    links = [('https://lvbet.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/--/1/35381/', 'polish football')]
+
+    # initialize output DataFrame
+    columns = ["team_1",  "team_2", "stake_1_wins",
+            "stake_draw", "stake_2_wins", "url", "category"]
+    df = pd.DataFrame({}, columns=columns)
+    
     # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
@@ -18,40 +26,37 @@ def scrape_lvbet() -> pd.DataFrame():
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
-
-    # lvbet polska piłka nożna
-    url = 'https://lvbet.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/--/1/35381/'
            
-    # load page
-    driver.get(url)
+    for link in links:
+        # unpack tuple
+        url, category = link
 
-    # initialize output DataFrame
-    df = pd.DataFrame()
-    columns = ["team_1",  "team_2", "stake_1_wins",
-               "stake_draw", "stake_2_wins", "url"]
+        # load page
+        driver.get(url)
 
-    # get table elements of every polish football league (on the same page)
-    table_elements = driver.find_elements(
-                    By.CLASS_NAME, 'odds-table__entry')
+        # get table elements of every polish football league (on the same page)
+        table_elements = driver.find_elements(
+                        By.CLASS_NAME, 'odds-table__entry')
 
-    for table_element in table_elements:
-        # split row into seperate items  
-        item = table_element.text.split("\n")
-        
-        # if invalid data - skip 
-        if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
-            print("LvBet: Error appending - " + " | ".join(item))
-            continue
+        for table_element in table_elements:
+            # split row into seperate items  
+            item = table_element.text.split("\n")
+            
+            # if invalid data - skip 
+            if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
+                print("LvBet: Error appending - " + " | ".join(item))
+                continue
 
-        # append item
-        dct = {"team_1": item[2],
+            # append item
+            dct = {"team_1": item[2],
                 "team_2": item[3],
                 "stake_1_wins": item[4],
                 "stake_draw": item[5],
                 "stake_2_wins": item[6],
-                "url": url}
-        df = df._append(pd.DataFrame(
-            [dct], columns=columns), ignore_index=True)
+                "url": url,
+                "category": category}
+            df = df._append(pd.DataFrame(
+                [dct], columns=columns), ignore_index=True)
 
     # close chrome
     driver.quit()

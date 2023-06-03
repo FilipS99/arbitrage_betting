@@ -11,23 +11,22 @@ import time
 
 
 def scrape_betclic() -> pd.DataFrame():
-
     # ligii polskie
-    urls = ['https://www.betclic.pl/pilka-nozna-s1/polska-1-liga-c1749',
-            'https://www.betclic.pl/pilka-nozna-s1/polska-2-liga-c2836',
-            'https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-2-c22093',
-            'https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-1-c22012',
-            'https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-podkarpacka-c25999',
-            'https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-zachodniopomorska-c26010',
-            'https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-3-c22107',
-            'https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-4-c21798',
-            'https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-kujawsko-pomorska-c25994',
-            'https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-swietokrzyska-c26007']
+    links = [('https://www.betclic.pl/pilka-nozna-s1/polska-1-liga-c1749', 'polish football'),
+            ('https://www.betclic.pl/pilka-nozna-s1/polska-2-liga-c2836', 'polish football'),
+            ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-2-c22093', 'polish football'),
+            ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-1-c22012', 'polish football'),
+            ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-podkarpacka-c25999', 'polish football'),
+            ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-zachodniopomorska-c26010', 'polish football'),
+            ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-3-c22107', 'polish football'),
+            ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-4-c21798', 'polish football'),
+            ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-kujawsko-pomorska-c25994', 'polish football'),
+            ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-swietokrzyska-c26007', 'polish football')]
     
     # initialize output DataFrame
-    df = pd.DataFrame()
     columns = ["team_1",  "team_2", "stake_1_wins",
-            "stake_draw", "stake_2_wins", "url"]
+            "stake_draw", "stake_2_wins", "url", "category"]
+    df = pd.DataFrame({}, columns=columns)
     
     #   chrome driver setup
     options = Options()
@@ -37,7 +36,10 @@ def scrape_betclic() -> pd.DataFrame():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
-    for url in urls:
+    for link in links:
+        # unpack tuple
+        url, category = link
+
         # load page
         driver.get(url)     
 
@@ -59,7 +61,8 @@ def scrape_betclic() -> pd.DataFrame():
                    "stake_1_wins": stakes[0].replace(",", "."),
                    "stake_draw": stakes[1].replace(",", "."),
                    "stake_2_wins": stakes[2].replace(",", "."),
-                   "url": url}
+                   "url": url,
+                   "category": category}
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

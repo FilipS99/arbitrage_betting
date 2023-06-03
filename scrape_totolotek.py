@@ -10,7 +10,17 @@ import pandas as pd
 import time
 
 
-def scrape_totolotek() -> pd.DataFrame():
+def scrape_totolotek() -> pd.DataFrame():    
+    # totolotek 1 liga
+    links = [('https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga', 'polish football'),
+             ('https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-2', 'polish football'),    
+             ('https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-1', 'polish football')]
+
+    # initialize output DataFrame
+    columns = ["team_1",  "team_2", "stake_1_wins",
+            "stake_draw", "stake_2_wins", "url", "category"]
+    df = pd.DataFrame({}, columns=columns)
+
     # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
@@ -19,21 +29,14 @@ def scrape_totolotek() -> pd.DataFrame():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
-    # initialize output DataFrame
-    df = pd.DataFrame()
-    columns = ["team_1",  "team_2", "stake_1_wins",
-            "stake_draw", "stake_2_wins", "url"]
-    
-    # totolotek 1 liga
-    urls = ['https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga',
-            'https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-2',    
-            'https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-1']
+    for link in links:
+        # unpack tuple
+        url, category = link
 
-    for url in urls:
         # load page
         driver.get(url)
         
-        time.sleep(5)
+        time.sleep(3)
 
         # get table elements of every polish football league (on the same page)
         table_elements = driver.find_elements(
@@ -50,11 +53,12 @@ def scrape_totolotek() -> pd.DataFrame():
 
             # append item
             dct = {"team_1": item[0],
-                    "team_2": item[1],
-                    "stake_1_wins": item[5],
-                    "stake_draw": item[7],
-                    "stake_2_wins": item[9],
-                    "url": url}
+                   "team_2": item[1],
+                   "stake_1_wins": item[5],
+                   "stake_draw": item[7],
+                   "stake_2_wins": item[9],
+                   "url": url,
+                   "category": category}
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

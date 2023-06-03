@@ -11,6 +11,14 @@ import time
 
 
 def scrape_betfan() -> pd.DataFrame():
+    # links
+    links = [('https://betfan.pl/lista-zakladow/pilka-nozna/polska/245', 'polish football')]
+
+    # initialize output DataFrame
+    columns = ["team_1",  "team_2", "stake_1_wins",
+            "stake_draw", "stake_2_wins", "url", "category"]
+    df = pd.DataFrame({}, columns=columns)
+    
     # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
@@ -19,38 +27,35 @@ def scrape_betfan() -> pd.DataFrame():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
-    # ligii polskie
-    url = 'https://betfan.pl/lista-zakladow/pilka-nozna/polska/245'
+    for link in links:
+        # unpack tuple
+        url, category = link
 
-    # load page
-    driver.get(url)
+        # load page
+        driver.get(url)
 
-    # initialize output DataFrame
-    df = pd.DataFrame()
-    columns = ["team_1",  "team_2", "stake_1_wins",
-               "stake_draw", "stake_2_wins", "url"]
+        # scrape rows
+        elements = driver.find_elements(By.XPATH,'/html/body/div[1]/div[2]/main/div[3]/div/div[*]/div[2]/div[*]/div/div[2]') 
 
-    # scrape rows
-    elements = driver.find_elements(By.XPATH,'/html/body/div[1]/div[2]/main/div[3]/div/div[*]/div[2]/div[*]/div/div[2]') 
-
-    for element in elements:
-        item = element.text.split('\n')
-        # ['Stal Rzeszów', 'Skra Częstochowa', 'Stal Rzeszów', '1.50', 'Remis', '4.50', 'Skra Częstochowa', '6.20', '+140']
-        
-        # if invalid data - skip 
-        if len(item) < 7 or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
-            print("BetFan: Error appending - " + " | ".join(item))
-            continue
-        
-        # append item
-        dct = {"team_1": item[0],
-               "team_2": item[1],
-               "stake_1_wins": item[3],
-               "stake_draw": item[5],
-               "stake_2_wins": item[7],
-               "url": url}
-        df = df._append(pd.DataFrame(
-            [dct], columns=columns), ignore_index=True)
+        for element in elements:
+            item = element.text.split('\n')
+            # ['Stal Rzeszów', 'Skra Częstochowa', 'Stal Rzeszów', '1.50', 'Remis', '4.50', 'Skra Częstochowa', '6.20', '+140']
+            
+            # if invalid data - skip 
+            if len(item) < 7 or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
+                print("BetFan: Error appending - " + " | ".join(item))
+                continue
+            
+            # append item
+            dct = {"team_1": item[0],
+                "team_2": item[1],
+                "stake_1_wins": item[3],
+                "stake_draw": item[5],
+                "stake_2_wins": item[7],
+                "url": url,
+                "category": category}
+            df = df._append(pd.DataFrame(
+                [dct], columns=columns), ignore_index=True)
 
     # close chrome
     driver.quit()

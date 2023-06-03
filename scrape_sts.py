@@ -11,26 +11,24 @@ import time
 
 
 def scrape_sts() -> pd.DataFrame():
-
-    # ligii polskie
-    urls = ['https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/',
-            'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/2-liga/184/30860/86439/',
-            'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-i/184/30860/86447/',
-            'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-ii/184/30860/86604/',
-            'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-iii/184/30860/86450/',
-            'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-iv/184/30860/86449/',
-            'https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/4-liga-podkarpacka/184/30860/86664/']
-    
+    links = [('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga/184/30860/86440/', 'polish football'),
+            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/2-liga/184/30860/86439/', 'polish football'),
+            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-i/184/30860/86447/', 'polish football'),
+            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-ii/184/30860/86604/', 'polish football'),
+            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-iii/184/30860/86450/', 'polish football'),
+            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/3-liga-grupa-iv/184/30860/86449/', 'polish football'),
+            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/4-liga-podkarpacka/184/30860/86664/', 'polish football')]
     
     # initialize output DataFrame
-    df = pd.DataFrame()
     columns = ["team_1",  "team_2", "stake_1_wins",
-            "stake_draw", "stake_2_wins", "url"]
+            "stake_draw", "stake_2_wins", "url", "category"]
+    df = pd.DataFrame({}, columns=columns)
     
-
-
     # Chrome instance in nested, since STS blocks quick page changes with Captcha
-    for url in urls:
+    for link in links:
+        # unpack tuple
+        url, category = link
+
         # chrome driver setup
         options = Options()
         # options.add_argument("--headless")  # opens in background
@@ -57,11 +55,12 @@ def scrape_sts() -> pd.DataFrame():
 
             # append item
             dct = {"team_1": item[0],
-                    "team_2": item[4],
-                    "stake_1_wins": item[1],
-                    "stake_draw": item[3],
-                    "stake_2_wins": item[5],
-                    "url": url}
+                   "team_2": item[4],
+                   "stake_1_wins": item[1],
+                   "stake_draw": item[3],
+                   "stake_2_wins": item[5],
+                   "url": url,
+                   "category": category}
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

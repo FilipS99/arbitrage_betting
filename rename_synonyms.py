@@ -3,8 +3,11 @@ import numpy as np
 
 
 def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
-    # replace every space and dashes
-    df = df.replace(' ', '', regex = True).replace('-', '', regex = True)
+    # replace every space and dashes in team names
+    # df = df.replace(' ', '', regex = True).replace('-', '', regex = True)
+    replacement_dict = {' ': '', '-': ''}
+    columns_to_replace = ['team_1', 'team_2']
+    df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
 
     # upper
     df['team_1'] = df['team_1'].str.upper()

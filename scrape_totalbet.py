@@ -11,14 +11,13 @@ import time
 
 
 def scrape_totalbet() -> pd.DataFrame():
-
     # ligii polskie
-    urls = ['https://totalbet.pl/sports/events/Pilka-nozna/7486,7489,12232,13951,13952,14272,39304,39305,39308,39309,39310,39311,39312,39313,39314,39315,39316,39317,39318,39319,39320,39321,41738,41739/1']
+    links = [('https://totalbet.pl/sports/events/Pilka-nozna/7486,7489,12232,13951,13952,14272,39304,39305,39308,39309,39310,39311,39312,39313,39314,39315,39316,39317,39318,39319,39320,39321,41738,41739/1', 'polish football')]
     
     # initialize output DataFrame
-    df = pd.DataFrame()
     columns = ["team_1",  "team_2", "stake_1_wins",
-            "stake_draw", "stake_2_wins", "url"]
+            "stake_draw", "stake_2_wins", "url", "category"]
+    df = pd.DataFrame({}, columns=columns)
     
     #   chrome driver setup
     options = Options()
@@ -28,7 +27,10 @@ def scrape_totalbet() -> pd.DataFrame():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
-    for url in urls:
+    for link in links:
+        # unpack tuple
+        url, category = link
+
         # load page
         driver.get(url)     
 
@@ -68,7 +70,8 @@ def scrape_totalbet() -> pd.DataFrame():
                    "stake_1_wins": item[3],
                    "stake_draw": item[4],
                    "stake_2_wins": item[5],
-                   "url": url}
+                   "url": url,
+                   "category": category}
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

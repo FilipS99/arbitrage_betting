@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # setup
     df = pd.DataFrame()
     # expected columns
-    # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
+    # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url", "category"]
 
     # Create thread objects for each function
     thread_sts = ScrapeThread(target_func=scrape_sts)
@@ -96,17 +96,17 @@ if __name__ == "__main__":
 
     print("\n-----------------------------------\n")
     print("All threads have finished executing")
-    print(f"{'STS:':<10} {len(thread_sts.result)}")
-    print(f"{'Lvbet:':<10} {len(thread_lvbet.result)}")
-    print(f"{'Superbet:':<10} {len(thread_superbet.result)}")
-    print(f"{'Fuksiarz:':<10} {len(thread_fuksiarz.result)}")
-    print(f"{'Etoto:':<10} {len(thread_etoto.result)}")
-    print(f"{'Totolotek:':<10} {len(thread_totolotek.result)}")
-    print(f"{'ForBet:':<10} {len(thread_forbet.result)}")
-    print(f"{'Fortuna:':<10} {len(thread_fortuna.result)}")
-    print(f"{'BetFan:':<10} {len(thread_betfan.result)}")
-    print(f"{'BetClic:':<10} {len(thread_betclic.result)}")
-    print(f"{'TotalBet:':<10} {len(thread_totalbet.result)}")
+    print(f"\nSTS:\n{thread_sts.result.groupby(['category']).size()}")
+    print(f"\nLvbet:\n{thread_lvbet.result.groupby(['category']).size()}")
+    print(f"\nSuperbet:\n{thread_superbet.result.groupby(['category']).size()}")
+    print(f"\nFuksiarz:\n{thread_fuksiarz.result.groupby(['category']).size()}")
+    print(f"\nEtoto:\n{thread_etoto.result.groupby(['category']).size()}")
+    print(f"\nTotolotek:\n{thread_totolotek.result.groupby(['category']).size()}")
+    print(f"\nForBet:\n{thread_forbet.result.groupby(['category']).size()}")
+    print(f"\nFortuna:\n{thread_fortuna.result.groupby(['category']).size()}")
+    print(f"\nBetFan:\n{thread_betfan.result.groupby(['category']).size()}")
+    print(f"\nBetClic:\n{thread_betclic.result.groupby(['category']).size()}")
+    print(f"\nTotalBet:\n{thread_totalbet.result.groupby(['category']).size()}")
 
     # Merge threds outputs
     df = pd.concat([thread_sts.result, thread_lvbet.result, thread_superbet.result, 
@@ -120,6 +120,7 @@ if __name__ == "__main__":
     # generate all possible bets combinations
     calculate_bets_outcomes(df, bet_amount, output_path, filename_datetime)
 
+
     # save scraped data
     df.to_excel(output_path+filename_datetime+"_scraped.xlsx",
                 header=True, index=False)
@@ -127,4 +128,4 @@ if __name__ == "__main__":
     end_time = time.time()
     execution_time = end_time - start_time
 
-    print("Execution time:", round(execution_time, 2), "seconds")
+    print("\nExecution time:", round(execution_time, 2), "seconds")

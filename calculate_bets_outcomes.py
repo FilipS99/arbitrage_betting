@@ -12,23 +12,24 @@ def calculate_bets_outcomes(df: pd.DataFrame, amount: float, output_path: str, f
     df_copy['stake_2_wins'] = df_copy['stake_2_wins'].astype(float)
 
     # DataFrame with stake_1_wins and URLs
-    df_stake_1_wins = df_copy[['team_1', 'team_2', 'stake_1_wins', 'url']]
+    df_stake_1_wins = df_copy[['team_1', 'team_2', 'stake_1_wins', 'url', 'category']]
 
     # DataFrame with stake_draw and URLs
-    df_stake_draw = df_copy[['team_1', 'team_2', 'stake_draw', 'url']]
+    df_stake_draw = df_copy[['team_1', 'team_2', 'stake_draw', 'url', 'category']]
 
     # DataFrame with stake_2_wins and URLs
-    df_stake_2_wins = df_copy[['team_1', 'team_2', 'stake_2_wins', 'url']]
+    df_stake_2_wins = df_copy[['team_1', 'team_2', 'stake_2_wins', 'url', 'category']]
 
     # Merge the dataframes on team names
     df_merged = pd.merge(df_stake_1_wins, df_stake_draw,
-                         on=['team_1', 'team_2'])
-    df_merged = pd.merge(df_merged, df_stake_2_wins, on=['team_1', 'team_2'])
-
+                         on=['team_1', 'team_2', 'category'])
+    df_merged = pd.merge(df_merged, df_stake_2_wins, on=['team_1', 'team_2', 'category'])
+                  
     # Create a new dataframe with matching URLs, stake values for wins, draw, and 2 wins
     df_new = pd.DataFrame({
         'team_1': df_merged['team_1'],
         'team_2': df_merged['team_2'],
+        'category': df_merged['category'],
         'url_1_wins': df_merged['url_x'],
         'stake_1_wins': df_merged['stake_1_wins'],
         'url_draw': df_merged['url_y'],
@@ -70,7 +71,7 @@ def calculate_bets_outcomes(df: pd.DataFrame, amount: float, output_path: str, f
     positive_count = len(df_new[df_new['profit'] > 0])
 
     # Print the positive profit count
-    print("Number of rows where profit is positive:", positive_count)
+    print("\nNumber of rows where profit is positive:", positive_count)
 
     # save CSV file
     df_new.to_excel(output_path+filename+"_bets.xlsx",

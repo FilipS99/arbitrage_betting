@@ -11,6 +11,14 @@ import time
 
 
 def scrape_superbet() -> pd.DataFrame():
+    # SUPERBET
+    links = [('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/', 'polish football')]
+
+    # initialize output DataFrame
+    columns = ["team_1",  "team_2", "stake_1_wins",
+            "stake_draw", "stake_2_wins", "url", "category"]
+    df = pd.DataFrame({}, columns=columns)
+    
     # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
@@ -19,43 +27,40 @@ def scrape_superbet() -> pd.DataFrame():
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
 
-    # SUPERBET
-    url = 'https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/'
+    for link in links:
+        # unpack tuple
+        url, category = link
 
-    # load page
-    driver.get(url)
+        # load page
+        driver.get(url)
 
-    time.sleep(5)
-
-    # initialize output DataFrame
-    df = pd.DataFrame()
-    columns = ["team_1",  "team_2", "stake_1_wins",
-               "stake_draw", "stake_2_wins", "url"]
-    
-    # get table elements of every polish football league (on the same page)
-    table_elements = driver.find_elements(
-                    By.CLASS_NAME, 'event-row__layout')
-    
-    
-    for table_element in table_elements:
-        # split row into seperate items  
-        item = table_element.text.split("\n")
-        # ['SOB.', '17:30', 'Niepołomice', 'Głogów', '2448', '1.47', '1.47', '4.50', '4.50', '6.50', '6.50', '+129']
+        # time.sleep(5)
         
-        # if invalid data - skip 
-        if len(item) < 12 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
-            print("SuperBet: Error appending - " + " | ".join(item))
-            continue
+        # get table elements of every polish football league (on the same page)
+        table_elements = driver.find_elements(
+                        By.CLASS_NAME, 'event-row__layout')
+        
+        
+        for table_element in table_elements:
+            # split row into seperate items  
+            item = table_element.text.split("\n")
+            # ['SOB.', '17:30', 'Niepołomice', 'Głogów', '2448', '1.47', '1.47', '4.50', '4.50', '6.50', '6.50', '+129']
+            
+            # if invalid data - skip 
+            if len(item) < 12 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
+                print("SuperBet: Error appending - " + " | ".join(item))
+                continue
 
-        # append item
-        dct = {"team_1": item[2],
-                "team_2": item[3],
-                "stake_1_wins": item[5],
-                "stake_draw": item[7],
-                "stake_2_wins": item[9],
-                "url": url}
-        df = df._append(pd.DataFrame(
-            [dct], columns=columns), ignore_index=True)
+            # append item
+            dct = {"team_1": item[2],
+                    "team_2": item[3],
+                    "stake_1_wins": item[5],
+                    "stake_draw": item[7],
+                    "stake_2_wins": item[9],
+                    "url": url,
+                    "category": category}
+            df = df._append(pd.DataFrame(
+                [dct], columns=columns), ignore_index=True)
 
     # close chrome
     driver.quit()
