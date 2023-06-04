@@ -12,8 +12,12 @@ import time
 
 def scrape_betfan() -> pd.DataFrame():
     # links
-    links = [('https://betfan.pl/lista-zakladow/pilka-nozna/polska/245', 'polish football'),
-             ('https://betfan.pl/lista-zakladow/pilka-nozna/finlandia/856', 'finland football')]
+    links = [
+                ('https://betfan.pl/lista-zakladow/pilka-nozna/polska/245', 'polish football'),
+                ('https://betfan.pl/lista-zakladow/pilka-nozna/finlandia/856', 'finland football'),
+                ('https://betfan.pl/lista-zakladow/rugby/rugby-league/991', 'rugby'),
+                ('https://betfan.pl/lista-zakladow/rugby/rugby-union/674', 'rugby')
+            ]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",

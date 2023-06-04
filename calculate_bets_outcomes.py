@@ -71,7 +71,7 @@ def calculate_bets_outcomes(df: pd.DataFrame, amount: float, output_path: str, f
     positive_count = len(df_new[df_new['profit'] > 0])
 
     # Print the positive profit count
-    print("\npNumber of rows where profit is positive:", positive_count)
+    print("\nNumber of rows where profit is positive:", positive_count)
 
     # save CSV file
     df_new.to_excel(output_path+filename+"_bets.xlsx",

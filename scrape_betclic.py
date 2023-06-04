@@ -28,7 +28,9 @@ def scrape_betclic() -> pd.DataFrame():
                 ('https://www.betclic.pl/pilka-nozna-s1/finlandia-2-liga-c494', 'finland football'),
                 ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-a-c7467', 'finland football'),
                 ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-b-c7468', 'finland football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-c-c7469', 'finland football')
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-c-c7469', 'finland football'),
+                ('https://www.betclic.pl/rugby-xiii-s52', 'rugby'),
+                ('https://www.betclic.pl/rugby-xv-s5', 'rugby')
             ]
     
     # initialize output DataFrame

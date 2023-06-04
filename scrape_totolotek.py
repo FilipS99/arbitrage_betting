@@ -13,11 +13,10 @@ import time
 def scrape_totolotek() -> pd.DataFrame():    
     # totolotek 1 liga
     links = [
-        # ('https://www.totolotek.pl/pl/pilka-nozna-polska-i-liga', 'polish football'),
-        #      ('https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-2', 'polish football'),    
-        #      ('https://www.totolotek.pl/pl/pilka-nozna/polska-iii-liga-gr-1', 'polish football')
-            ('https://www.totolotek.pl/pl/pilka-nozna/polska', 'polish football'),
-            ('https://www.totolotek.pl/pl/pilka-nozna/finlandia', 'finland football')]
+                ('https://www.totolotek.pl/pl/pilka-nozna/polska', 'polish football'),
+                ('https://www.totolotek.pl/pl/pilka-nozna/finlandia', 'finland football'),
+                ('https://www.totolotek.pl/pl/rugby', 'rugby')
+            ]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",

@@ -12,8 +12,11 @@ import time
 
 def scrape_lvbet() -> pd.DataFrame():
     # lvbet polska piłka nożna
-    links = [('https://lvbet.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/--/1/35381/', 'polish football'),
-             ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37529,37532,37533', 'finland football')]
+    links = [
+                ('https://lvbet.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/--/1/35381/', 'polish football'),
+                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37529,37532,37533', 'finland football'),
+                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=21996,21985,21995,22043,22058,22061', 'rugby')
+            ]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",

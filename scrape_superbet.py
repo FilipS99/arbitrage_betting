@@ -12,8 +12,11 @@ import time
 
 def scrape_superbet() -> pd.DataFrame():
     # SUPERBET
-    links = [('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/', 'polish football'),
-             ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/finlandia', 'finland football')]
+    links = [
+                ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/', 'polish football'),
+                ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/finlandia', 'finland football'),
+                ('https://superbet.pl/zaklady-bukmacherskie/rugby', 'rugby')
+            ]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",

@@ -12,8 +12,10 @@ import time
 
 def scrape_sts() -> pd.DataFrame():
     links = [
-            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/184/30860/', 'polish football'),
-            ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/finlandia/184/30891/', 'finland football')
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/184/30860/', 'polish football'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/finlandia/184/30891/', 'finland football'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-league/195/31059/', 'rugby'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-union/195/31057/', 'rugby')
             ]
     
     # initialize output DataFrame
