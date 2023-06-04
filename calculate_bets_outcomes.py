@@ -73,6 +73,11 @@ def calculate_bets_outcomes(df: pd.DataFrame, amount: float, output_path: str, f
     # Print the positive profit count
     print("\nNumber of rows where profit is positive:", positive_count)
 
+    # Round 'Column1' to two decimal places
+    columns_to_round = ['total_implied_prob', 'bet_win_1_taxed_amount', 'bet_win_2_taxed_amount', 'bet_draw_taxed_amount', 'bet_win_1_untaxed_amount', 'bet_win_2_untaxed_amount', 'bet_draw_untaxed_amount', 'profit']
+
+    df_new[columns_to_round] = df_new[columns_to_round].round(2)
+
     # save CSV file
     df_new.to_excel(output_path+filename+"_bets.xlsx",
                     header=True, index=False)

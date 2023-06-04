@@ -51,8 +51,9 @@ def scrape_totolotek() -> pd.DataFrame():
                         By.XPATH, '/html/body/app-root/div/web-layout/div[1]/div/section/div/home-page/section/div/games-list/div/gamelist/div/div/div[*]/game/div')
             current_elements_count = len(table_elements)
             
-            # scroll to last loaded element
-            driver.execute_script("arguments[0].scrollIntoView(false);", table_elements[-1])
+            if current_elements_count > 0:
+                # scroll to last loaded element
+                driver.execute_script("arguments[0].scrollIntoView(false);", table_elements[-1])
         
         for table_element in table_elements:
             # Get initial element position

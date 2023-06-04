@@ -62,8 +62,7 @@ if __name__ == "__main__":
     thread_betclic = ScrapeThread(target_func=scrape_betclic)
     thread_totalbet = ScrapeThread(target_func=scrape_totalbet)
 
-    # sts/lvbet taking longest
-    thread_sts.start()
+    # lvbet taking longest
     thread_lvbet.start()
 
     thread_superbet.start()
@@ -85,13 +84,14 @@ if __name__ == "__main__":
     thread_betfan.start()
     thread_betclic.start()
     thread_totalbet.start()
+    thread_sts.start()
 
     thread_betfan.join()
     thread_betclic.join()
     thread_totalbet.join()
-
-    # sts/lvbet taking longest
     thread_sts.join()
+
+    # lvbet taking longest
     thread_lvbet.join()
 
     print("\n-----------------------------------\n")

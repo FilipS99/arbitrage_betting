@@ -7,7 +7,8 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
     # df = df.replace(' ', '', regex = True).replace('-', '', regex = True)
     replacement_dict = {' ': '', 
                         '-': '', 
-                        '/': ''}
+                        '/': '',
+                        'BARAŻPF': ''}
     columns_to_replace = ['team_1', 'team_2']
     df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
 
@@ -50,6 +51,7 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'WISŁAK.': 'WISŁAKRAKÓW',
         'NIECIECZA': 'TERMALICANIECIECZA',
         'BRUKBETTERMALICANIECIECZA': 'TERMALICANIECIECZA',
+        'TERMALICABRUKBETNIECIECZA': 'TERMALICANIECIECZA',
         'TERMALICABRUKB.': 'TERMALICANIECIECZA',
         'BRUKBETIINIECIECZA': 'BRUKBETNIECIECZAII',
         'TERMALICAIINIECIECZA': 'BRUKBETNIECIECZAII',
@@ -69,7 +71,8 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'CWKSRESOVIA': 'RESOVIARZESZÓW',
         'RESOVIA': 'RESOVIARZESZÓW',
         'STALIIRZESZÓW': 'STALRZESZÓWII',
-        'S.RZESZÓW': 'STALRZESZÓW',
+        'S.RZESZÓW': 'ZKSSTALRZESZÓW',
+        'STALRZESZÓW': 'ZKSSTALRZESZÓW',
         'PODBESKIDZIEBIE.': 'TSPODBESKIDZIEBIELSKOBIAŁA',
         'PODBESKIDZIE': 'TSPODBESKIDZIEBIELSKOBIAŁA',
         'PODBESKIDZIEBIELSKOBIAŁA': 'TSPODBESKIDZIEBIELSKOBIAŁA',
@@ -409,7 +412,9 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'L.DREZDENKO': 'LUBUSZANINDREZDENKO',
         'DREZDENKO': 'LUBUSZANINDREZDENKO',
         'W.WOLARZĘDZIŃSKA': 'WOLANIAWOLARZĘDZIŃSKA',
+        'WOLARZĘDZIŃSKA': 'WOLANIAWOLARZĘDZIŃSKA',
         'WÓLKAPEŁKIŃSKA': 'WÓLCZANKAWÓLKAPEŁKIŃSKA',
+        'WÓŁKAPEŁKIŃSKA': 'WÓLCZANKAWÓLKAPEŁKIŃSKA',
         'WOLCZANKAWÓLKAPEŁKIŃSKA': 'WÓLCZANKAWÓLKAPEŁKIŃSKA',
         'WOLCZANKAWOLKAPEŁKIŃSKA': 'WÓLCZANKAWÓLKAPEŁKIŃSKA',
         'WOLCZANKAWOLKAPELKIŃSKA': 'WÓLCZANKAWÓLKAPEŁKIŃSKA',
@@ -487,6 +492,8 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'JAWORZNO': 'SZCZAKOWIANKAJAWORZNO',
         'S.JAWORZNO': 'SZCZAKOWIANKAJAWORZNO',
         'SZ.JAWORZNO': 'SZCZAKOWIANKAJAWORZNO',
+        'OŚWIĘCIM': 'UNIAOŚWIĘCIM',
+        'U.OŚWIĘCIM': 'UNIAOŚWIĘCIM',
 
 
 
@@ -534,6 +541,7 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'NJS': 'NURMIJARVENJALKAPALLOSEURA',
         'KLUBI04': 'HJKKLUBI04',
         'SJK2': 'SJKAKATEMIA',
+        'SJK': 'SJKSEINAJOKI',
         'JBK': 'JBKPIETARSAARI',
         'ROVANIEMI': 'ROVANIEMIPALLOSEURA',
         'ROVANIEMENPS': 'ROVANIEMIPALLOSEURA',
@@ -559,6 +567,7 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'SEINAJOEN': 'SEINAJOENJK',
         'VAASA': 'VAASANPS',
         'VAASAPS': 'VAASANPS',
+        'VAASANPS': 'VAASANPS',
         'VAASAN': 'VAASANPS',
         'VPS': 'VAASANPS',
         'GRIFK': 'GRANKULLAIFK',
@@ -584,6 +593,7 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'EIF': 'EKENASIF',
         'EKANAS': 'EKENASIF',
         'TAMPEREUTD': 'TAMPEREUNITED',
+        'TAMPEREUTD.': 'TAMPEREUNITED',
         'MARIEHAMN': 'IFKMARIEHAMN',
         'JÄPS': 'JAPS',
         'TORNIONPALLO': 'TORNIONPALLO47',
@@ -605,6 +615,57 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'HELSINKIHJK': 'HJKHELSINKI',
         'OTP': 'OTPOULU',
         'OTPFC': 'OTPOULU',
+
+
+
+
+
+        # rugby
+        'BATLEYB.': 'BATLEYBULLDOGS',
+        'YORKKNIGHTS': 'YORKCITYKNIGHTS',
+        'WARATAHS': 'NSWWARATAHS',
+        'BRISBANEB.': 'BRISBANEBRONCOS',
+        'NEWCASTLEK.': 'NEWCASTLEKNIGHTS',
+        'HURRICANES': 'WELLINGTONHURRICANES',
+        'CANBERRAR.': 'CANBERRARAIDERS',
+        'NEWZEALANDW.': 'NEWZEALANDWARRIORS',
+        'CANTERBURYBULLDOGS': 'CANTERBURYBANKSTOWNBULLDOGS',
+        'CANTERBURYB.': 'CANTERBURYBANKSTOWNBULLDOGS',
+        'PARRAMATTA': 'PARRAMATTAEELS',
+        'REDS': 'QUEENSLANDREDS',
+        'FIJIWARRIORS': 'FIJIANDRUA',
+        'CRUSADERS': 'CRUSADERSFC',
+        'GOLDCOASTT.': 'GOLDCOASTTITANS',
+        'WESTSTIGERS': 'WESTSTIGERSRLFC',
+        'HULL': 'HULLFC',
+        'WARRINGTONW.': 'WARRINGTONWOLVES',
+        'ROMANIA': 'RUMUNIA',
+        'KEIGHLEYC.': 'KEIGHLEYCOUGARS',
+        'SWINTONL.': 'SWINTONLIONS',
+        'BORDEAUX': 'UNIONBORDEAUXBEGLES',
+        'BEGLESBORDEAUX': 'UNIONBORDEAUXBEGLES',
+        'BORDEAUXBEGLES': 'UNIONBORDEAUXBEGLES',
+        'LYON': 'LYONOLYMPIQUEUNIVERSITAIRE',
+        'LYONOU': 'LYONOLYMPIQUEUNIVERSITAIRE',
+        'LYONRUGBY': 'LYONOLYMPIQUEUNIVERSITAIRE',
+        'MANLYS.E.': 'MANLYSEAEAGLES',
+        'DOLPHINS': 'DOLPHINS(NRL)',
+        'MELBOURNES.': 'MELBOURNESTORM',
+        'CRONULLASHARKS': 'CRONULLASUTHERLANDSHARKS',
+        'CRONULLA': 'CRONULLASUTHERLANDSHARKS',
+        'REPUBLIKAPOŁUDNIOWEJAFRYKI': 'RPA',
+        'ST.GEORGE': 'STGEORGEILLAWARRADRAGONS',
+        'ST.GEORGEILLAWARRA': 'STGEORGEILLAWARRADRAGONS',
+        'S.SYDNEY': 'SOUTHSYDNEYRABBITOHS',
+        'HUDDERSFIELD': 'HUDDERSFIELDGIANTS',
+        'SYDNEYR.': 'SYDNEYROOSTERS',
+        'PENRITHP.': 'PENRITHPANTHERS',
+        'UTD.NEWYORK': 'RUGBYUNITEDNEWYORK',
+        'WIDNES': 'WIDNESVIKINGS',
+        'LONDONB.': 'LONDONBRONCOS',
+
+
+
 
         # so i dont care about comma
         '': ''
