@@ -96,27 +96,35 @@ if __name__ == "__main__":
 
     print("\n-----------------------------------\n")
     print("All threads have finished executing")
-    print(f"\nSTS:\n{thread_sts.result.groupby(['category']).size()}")
-    print(f"\nLvbet:\n{thread_lvbet.result.groupby(['category']).size()}")
-    print(f"\nSuperbet:\n{thread_superbet.result.groupby(['category']).size()}")
-    print(f"\nFuksiarz:\n{thread_fuksiarz.result.groupby(['category']).size()}")
-    print(f"\nEtoto:\n{thread_etoto.result.groupby(['category']).size()}")
-    print(f"\nTotolotek:\n{thread_totolotek.result.groupby(['category']).size()}")
-    print(f"\nForBet:\n{thread_forbet.result.groupby(['category']).size()}")
-    print(f"\nFortuna:\n{thread_fortuna.result.groupby(['category']).size()}")
-    print(f"\nBetFan:\n{thread_betfan.result.groupby(['category']).size()}")
-    print(f"\nBetClic:\n{thread_betclic.result.groupby(['category']).size()}")
-    print(f"\nTotalBet:\n{thread_totalbet.result.groupby(['category']).size()}")
 
-    # Merge threds outputs
-    df = pd.concat([thread_sts.result, thread_lvbet.result, thread_superbet.result, 
-                    thread_fuksiarz.result, thread_etoto.result, thread_totolotek.result, 
-                    thread_forbet.result, thread_fortuna.result, thread_betfan.result,
-                    thread_betclic.result, thread_totalbet.result], ignore_index=True)
+    # Define the list of variables
+    threads = ['thread_sts', 'thread_lvbet', 'thread_superbet', 'thread_fuksiarz',
+                'thread_etoto', 'thread_totolotek', 'thread_forbet', 'thread_fortuna',
+                'thread_betfan', 'thread_betclic', 'thread_totalbet']
+
+    category_size_per_page = pd.DataFrame({})
+
+    # Iterate over the threads, print and append the results
+    for thread in threads:
+        result = globals()[thread].result
+        if not isinstance(result, pd.DataFrame):
+            print(f"\n{thread.capitalize()}: CRITICAL ERROR")
+        else:
+            # append category_size_per_page
+            category_size_per_page[thread] = result.groupby(['category']).size()
+
+            # append main data DataFrame
+            df = pd.concat([df, result])
+
+    # print category_size_per_page
+    print(category_size_per_page)
 
     # replace synonyms 
     df = rename_synonyms(df)
 
+    # sorting
+    df = df.sort_values(by=['category', 'team_1', 'team_2'], ascending=[True, True, True])
+ 
     # generate all possible bets combinations
     calculate_bets_outcomes(df, bet_amount, output_path, filename_datetime)
 
