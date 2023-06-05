@@ -15,8 +15,9 @@ def scrape_forbet() -> pd.DataFrame():
     # links
     links = [
                 ('https://www.iforbet.pl/zaklady-bukmacherskie/320', 'polish football'),
-                ('https://www.iforbet.pl/zaklady-bukmacherskie/139', 'finland football'),
-                ('https://www.iforbet.pl/zaklady-bukmacherskie/12', 'rugby')
+                ('https://www.iforbet.pl/zaklady-bukmacherskie/139', 'finnish football'),
+                ('https://www.iforbet.pl/zaklady-bukmacherskie/12', 'rugby'),
+                ('https://www.iforbet.pl/zaklady-bukmacherskie/436', 'brazilian football')
              ]
 
     # initialize output DataFrame
@@ -38,6 +39,9 @@ def scrape_forbet() -> pd.DataFrame():
 
         # load page
         driver.get(url)
+        
+        # in case of 'stale' elements
+        time.sleep(3)
 
         # Locate the specific sections
         section_elements = driver.find_elements(By.XPATH, '//*[@class="mb-6"]')  

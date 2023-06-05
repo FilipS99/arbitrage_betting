@@ -14,9 +14,10 @@ def scrape_betfan() -> pd.DataFrame():
     # links
     links = [
                 ('https://betfan.pl/lista-zakladow/pilka-nozna/polska/245', 'polish football'),
-                ('https://betfan.pl/lista-zakladow/pilka-nozna/finlandia/856', 'finland football'),
+                ('https://betfan.pl/lista-zakladow/pilka-nozna/finlandia/856', 'finnish football'),
                 ('https://betfan.pl/lista-zakladow/rugby/rugby-league/991', 'rugby'),
-                ('https://betfan.pl/lista-zakladow/rugby/rugby-union/674', 'rugby')
+                ('https://betfan.pl/lista-zakladow/rugby/rugby-union/674', 'rugby'),
+                ('https://betfan.pl/lista-zakladow/pilka-nozna/brazylia/240', 'brazilian football')
             ]
 
     # initialize output DataFrame
@@ -38,16 +39,42 @@ def scrape_betfan() -> pd.DataFrame():
 
         # load page
         driver.get(url)
+        
+        # in case of 'stale' elements
+        time.sleep(3)
 
         # scrape rows
         elements = driver.find_elements(By.XPATH,'/html/body/div[1]/div[2]/main/div[3]/div/div[*]/div[2]/div[*]/div/div[2]') 
 
         for element in elements:
+            # Get initial element position
+            initial_position = element.location["y"]
+
+            # Scroll loop - until element is visible
+            while True:
+                # Scroll to the element's bottom position
+                driver.execute_script("arguments[0].scrollIntoView(false);", element)
+                
+                # Wait for a short interval to allow content to load
+                # time.sleep(0.1)
+                
+                # Calculate the new element position after scrolling
+                new_position = element.location["y"]
+                
+                # Break the loop if the element's position remains the same (reached the bottom)
+                if new_position == initial_position:
+                    break
+                
+                # Update the last recorded position
+                initial_position = new_position
+
             item = element.text.split('\n')
             # ['Stal Rzeszów', 'Skra Częstochowa', 'Stal Rzeszów', '1.50', 'Remis', '4.50', 'Skra Częstochowa', '6.20', '+140']
             
             # if invalid data - skip 
             if len(item) < 7 or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
+                if item[0] == '':
+                    continue
                 print("BetFan: Error appending - " + " | ".join(item))
                 continue
             

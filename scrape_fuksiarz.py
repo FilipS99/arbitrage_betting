@@ -15,8 +15,9 @@ def scrape_fuksiarz() -> pd.DataFrame():
     # links
     links = [
                 ('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga-polska,3-liga-gr-i,2-liga-polska,3-liga-gr-ii,3-liga-gr-iii,3-liga-gr-iv,4-liga,regionalny-puchar-polski/517,602,537,594,575,597,1294,179592/1', 'polish football'),
-                ('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/finlandia/1-liga,2-liga,3-liga/693,912,144998/1', 'finland football'),
-                ('https://fuksiarz.pl/zaklady-bukmacherskie/rugby/rugby-league,rugby-union/anglia-super-league,australia-nrl,rfl-championship,puchar-swiata,super-rugby,francja-top-14/1261,585,95327,198619,2375,1785/12', 'rugby')
+                ('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/finlandia/1-liga,2-liga,3-liga/693,912,144998/1', 'finnish football'),
+                ('https://fuksiarz.pl/zaklady-bukmacherskie/rugby/rugby-league,rugby-union/anglia-super-league,australia-nrl,rfl-championship,puchar-swiata,super-rugby,francja-top-14/1261,585,95327,198619,2375,1785/12', 'rugby'),
+                ('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/brazylia/1-liga,2-liga,3-liga,4-liga,1-liga-(k)/710,749,1324,1816,1640/1', 'brazilian football')
             ]
 
     # initialize output DataFrame
@@ -38,6 +39,9 @@ def scrape_fuksiarz() -> pd.DataFrame():
 
         # load page
         driver.get(url)
+        
+        # in case of 'stale' elements
+        time.sleep(3)
 
         # Locate the specific sections
         section_elements = driver.find_elements(By.XPATH, '//*[@class="list-unstyled single-events"]')

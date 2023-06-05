@@ -11,10 +11,22 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
                         'baraż / PF / Rozszerzona oferta LIVE': '',
                         'baraż / PF': ''}
     columns_to_replace = ['team_1', 'team_2']
-    df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
-    df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
-    df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
-    df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
+
+    replace_list = [
+                    ['baraż / PF / Rozszerzona oferta LIVE', ''],
+                    ['baraż / PF', ''],
+                    [' ', ''], 
+                    ['-', ''], 
+                    ['/', '']
+                   ]
+    for replace in replace_list:
+        df = df.replace(replace[0], replace[1], regex = True)
+
+    # df = df.replace(' ', '', regex = True).replace('-', '', regex = True)
+    # df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
+    # df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
+    # df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
+    # df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
 
     # upper
     df['team_1'] = df['team_1'].str.upper()

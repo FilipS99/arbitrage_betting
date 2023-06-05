@@ -13,9 +13,10 @@ import time
 def scrape_sts() -> pd.DataFrame():
     links = [
                 ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/184/30860/', 'polish football'),
-                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/finlandia/184/30891/', 'finland football'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/finlandia/184/30891/', 'finnish football'),
                 ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-league/195/31059/', 'rugby'),
-                ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-union/195/31057/', 'rugby')
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-union/195/31057/', 'rugby'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/brazylia/184/30863/', 'brazilian football')
             ]
     
     # initialize output DataFrame
@@ -38,6 +39,9 @@ def scrape_sts() -> pd.DataFrame():
 
         # load page
         driver.get(url)     
+        
+        # in case of 'stale' elements
+        time.sleep(3)
 
         # get table elements of every polish football league (on the same page)
         table_elements = driver.find_elements(By.XPATH, '/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div/div/table[*]/tbody/tr/td[2]/table/tbody/tr')

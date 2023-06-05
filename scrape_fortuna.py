@@ -19,12 +19,16 @@ def scrape_fortuna() -> pd.DataFrame():
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-ii', 'polish football'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iii', 'polish football'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iv', 'polish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-finlandia', 'finland football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-finlandia', 'finland football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-a', 'finland football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-b', 'finland football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-c', 'finland football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/rugby', 'rugby')
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-finlandia', 'finnish football'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-finlandia', 'finnish football'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-a', 'finnish football'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-b', 'finnish football'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-c', 'finnish football'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/rugby', 'rugby'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-brazylia', 'brazilian football'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-brazylia-k-', 'brazilian football'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-brazylia', 'brazilian football'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-brazylia', 'brazilian football')
             ]
     
     # initialize output DataFrame
@@ -45,12 +49,36 @@ def scrape_fortuna() -> pd.DataFrame():
         url, category = link
 
         # load page
-        driver.get(url)     
+        driver.get(url)  
+        
+        # in case of 'stale' elements
+        time.sleep(1)   
 
         # get table elements of every polish football league (on the same page)
         table_elements = driver.find_elements(By.XPATH, '/html/body/div[2]/div/div[2]/div[2]/div/div[3]/div[5]/section/div[2]/div/div/table/tbody/tr[*]')
 
         for table_element in table_elements:
+            # Get initial element position
+            initial_position = table_element.location["y"]
+
+            # Scroll loop - until element is visible
+            while True:
+                # Scroll to the element's bottom position
+                driver.execute_script("arguments[0].scrollIntoView(false);", table_element)
+                
+                # Wait for a short interval to allow content to load
+                # time.sleep(0.1)
+                
+                # Calculate the new element position after scrolling
+                new_position = table_element.location["y"]
+                
+                # Break the loop if the element's position remains the same (reached the bottom)
+                if new_position == initial_position:
+                    break
+                
+                # Update the last recorded position
+                initial_position = new_position
+
             item = table_element.text.split("\n")
             # 00: ['P.Niepołomice - Ch.G... Multiliga', '1.48', '4.50', '6.70', '1.11', '2.69', '1.21', '+82', '03.06. 17:30']
             

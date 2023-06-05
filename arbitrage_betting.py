@@ -62,45 +62,24 @@ if __name__ == "__main__":
     thread_betclic = ScrapeThread(target_func=scrape_betclic)
     thread_totalbet = ScrapeThread(target_func=scrape_totalbet)
 
-    # lvbet taking longest
-    thread_lvbet.start()
-
-    thread_superbet.start()
-    thread_fuksiarz.start()
-    thread_etoto.start()
-
-    thread_superbet.join()
-    thread_fuksiarz.join()
-    thread_etoto.join()
-
-    thread_totolotek.start()
-    thread_forbet.start()
-    thread_fortuna.start()
-
-    thread_totolotek.join()
-    thread_forbet.join()
-    thread_fortuna.join()
+    # Define the list of threads
+    threads = [ 
+                'thread_betclic', 'thread_lvbet', 'thread_sts', 'thread_fortuna',  
+                'thread_superbet', 'thread_fuksiarz', 'thread_etoto', 'thread_totolotek', 
+                'thread_forbet', 'thread_betfan', 'thread_totalbet' 
+              ]
     
-    thread_betfan.start()
-    thread_betclic.start()
-    thread_totalbet.start()
-    thread_sts.start()
+    # start threads with delay
+    for thread in threads:
+        globals()[thread].start()
+        time.sleep(3)
 
-    thread_betfan.join()
-    thread_betclic.join()
-    thread_totalbet.join()
-    thread_sts.join()
-
-    # lvbet taking longest
-    thread_lvbet.join()
+    # join threads 
+    for thread in threads:
+        globals()[thread].join()
 
     print("\n-----------------------------------\n")
     print("All threads have finished executing")
-
-    # Define the list of variables
-    threads = ['thread_sts', 'thread_lvbet', 'thread_superbet', 'thread_fuksiarz',
-                'thread_etoto', 'thread_totolotek', 'thread_forbet', 'thread_fortuna',
-                'thread_betfan', 'thread_betclic', 'thread_totalbet']
 
     category_size_per_page = pd.DataFrame({})
 

@@ -14,9 +14,10 @@ def scrape_etoto() -> pd.DataFrame():
     # links
     links = [
                 ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga,4-liga-dolnoslaska-(baraz-o-iii-lige),4-liga-opolska,4-liga-podkarpacka/305,15462,15332,15473', 'polish football'),
-                ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/finlandia/veikkausliiga,ykkonen,kakkonen-itainen,kakkonen-lantinen,kakkonen-pohjoinen/240,289,349,390,366', 'finland football'),
-                ('https://www.etoto.pl/zaklady-bukmacherskie/rugby/rugby-union,rugby-league/top-14,major-league-rugby,super-rugby,puchar-swiata,super-league,rfl-championship,state-of-origin/2593,5519,15034,22951,2591,6227,7679', 'rugby')
-             ]
+                ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/finlandia/veikkausliiga,ykkonen,kakkonen-itainen,kakkonen-lantinen,kakkonen-pohjoinen/240,289,349,390,366', 'finnish football'),
+                ('https://www.etoto.pl/zaklady-bukmacherskie/rugby/rugby-union,rugby-league/top-14,major-league-rugby,super-rugby,puchar-swiata,super-league,rfl-championship,state-of-origin/2593,5519,15034,22951,2591,6227,7679', 'rugby'),
+                ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/brazylia/serie-a,serie-d,serie-b,serie-c,campeonato-brasileiro-[k]/566,1144,734,773,1041', 'brazilian football') 
+            ]
 
     # initialize output DataFrame
     columns = ["team_1",  "team_2", "stake_1_wins",
@@ -37,11 +38,35 @@ def scrape_etoto() -> pd.DataFrame():
 
         # load page
         driver.get(url)
+        
+        # in case of 'stale' elements
+        time.sleep(3)
 
         # scrape rows
         elements = driver.find_elements(By.XPATH,'/html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li') 
 
         for element in elements:
+            # Get initial element position
+            initial_position = element.location["y"]
+
+            # Scroll loop - until element is visible
+            while True:
+                # Scroll to the element's bottom position
+                driver.execute_script("arguments[0].scrollIntoView(false);", element)
+                
+                # Wait for a short interval to allow content to load
+                # time.sleep(0.1)
+                
+                # Calculate the new element position after scrolling
+                new_position = element.location["y"]
+                
+                # Break the loop if the element's position remains the same (reached the bottom)
+                if new_position == initial_position:
+                    break
+                
+                # Update the last recorded position
+                initial_position = new_position
+
             item = element.text.split('\n')
             
             # if invalid data - skip 

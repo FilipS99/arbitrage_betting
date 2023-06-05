@@ -14,8 +14,9 @@ def scrape_totolotek() -> pd.DataFrame():
     # totolotek 1 liga
     links = [
                 ('https://www.totolotek.pl/pl/pilka-nozna/polska', 'polish football'),
-                ('https://www.totolotek.pl/pl/pilka-nozna/finlandia', 'finland football'),
-                ('https://www.totolotek.pl/pl/rugby', 'rugby')
+                ('https://www.totolotek.pl/pl/pilka-nozna/finlandia', 'finnish football'),
+                ('https://www.totolotek.pl/pl/rugby', 'rugby'),
+                ('https://www.totolotek.pl/pl/pilka-nozna/brazylia', 'brazilian football')
             ]
 
     # initialize output DataFrame

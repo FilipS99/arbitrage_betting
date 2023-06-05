@@ -14,8 +14,9 @@ def scrape_totalbet() -> pd.DataFrame():
     # ligii polskie
     links = [
                 ('https://totalbet.pl/sports/events/Pilka-nozna/7486,7489,12232,13951,13952,14272,39304,39305,39308,39309,39310,39311,39312,39313,39314,39315,39316,39317,39318,39319,39320,39321,41738,41739/1', 'polish football'),
-                ('https://totalbet.pl/sports/events/Pilka-nozna/7269,7270,7272,7273,7274/1', 'finland football'),
-                ('https://totalbet.pl/sports/events/Rugby/6631,6632,6634,6637,6650,6651,6652,30191/12', 'rugby')
+                ('https://totalbet.pl/sports/events/Pilka-nozna/7269,7270,7272,7273,7274/1', 'finnish football'),
+                ('https://totalbet.pl/sports/events/Rugby/6631,6632,6634,6637,6650,6651,6652,30191/12', 'rugby'),
+                ('https://totalbet.pl/sports/events/Pilka-nozna/7331,7342,7344,7351,7353,29269/1', 'brazilian football')
             ]
     
     # initialize output DataFrame
