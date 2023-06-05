@@ -67,6 +67,9 @@ def calculate_bets_outcomes(df: pd.DataFrame, amount: float, output_path: str, f
     df_new = df_new.sort_values('profit', ascending=False)
 
     # display info
+    # file tends to exceed max size
+    df_new = df_new[df_new['profit'] > -0.25*amount]
+
     # Count the rows where 'column_name' is positive
     positive_count = len(df_new[df_new['profit'] > 0])
 

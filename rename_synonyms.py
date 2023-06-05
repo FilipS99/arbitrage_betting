@@ -3,15 +3,7 @@ import numpy as np
 
 
 def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
-    # replace every space and dashes in team names
-    # df = df.replace(' ', '', regex = True).replace('-', '', regex = True)
-    replacement_dict = {' ': '', 
-                        '-': '', 
-                        '/': '',
-                        'baraż / PF / Rozszerzona oferta LIVE': '',
-                        'baraż / PF': ''}
-    columns_to_replace = ['team_1', 'team_2']
-
+    # replace in team names
     replace_list = [
                     ['baraż / PF / Rozszerzona oferta LIVE', ''],
                     ['baraż / PF', ''],
@@ -20,21 +12,14 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
                     ['/', '']
                    ]
     for replace in replace_list:
-        df = df.replace(replace[0], replace[1], regex = True)
-
-    # df = df.replace(' ', '', regex = True).replace('-', '', regex = True)
-    # df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
-    # df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
-    # df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
-    # df[columns_to_replace] = df[columns_to_replace].apply(lambda x: x.str.replace('|'.join(replacement_dict.keys()), lambda m: replacement_dict[m.group()], regex=True))
+        df[['team_1','team_2']] = df[['team_1','team_2']].replace(replace[0], replace[1], regex = True)
 
     # upper
     df['team_1'] = df['team_1'].str.upper()
     df['team_2'] = df['team_2'].str.upper()
 
     # dictionary of synonym replacements
-    synonyms = {
-        # polish football
+    synonyms_polish_football = {
         'G.ZABRZE': 'GÓRNIKZABRZE',
         'GÓRNIKZ.': 'GÓRNIKZABRZE',
         'GÓRNIKIIZ.': 'GÓRNIKZABRZEII',
@@ -556,14 +541,14 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'OSTRODA': 'SOKÓŁOSTRÓDA',
         'POLICE': 'CHEMIKPOLICE',
         'CH.POLICE': 'CHEMIKPOLICE',
-        'RYCZÓW': 'O.RYCZÓW',
+        'RYCZÓW': 'O.RYCZÓW'
+    }
 
 
+    synonyms_brazilian_football = {}
 
 
-
-
-        # finland football
+    synonyms_finnish_football = {
         'ATLANTIS': 'ATLANTISFCAKATEMIA',
         'ATLANTIS/AKATEMIA': 'ATLANTISFCAKATEMIA',
         'ATLANTISII': 'ATLANTISFCAKATEMIA',
@@ -681,13 +666,11 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         'OTPFC': 'OTPOULU',
         'VASA': 'VASAIFK',
         'IFK': 'VASAIFK',
-        'VIFK': 'VASAIFK',
+        'VIFK': 'VASAIFK'
+    }
 
 
-
-
-
-        # rugby
+    synonyms_rugby = {
         'BATLEYB.': 'BATLEYBULLDOGS',
         'YORKKNIGHTS': 'YORKCITYKNIGHTS',
         'WARATAHS': 'NSWWARATAHS',
@@ -757,17 +740,21 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
         '': ''
     }
 
-    df = df.replace({'team_1': synonyms,
-                    'team_2': synonyms})
 
-    # print(df)
+    df.loc[df['category'] == 'polish football'] = df.loc[df['category'] == 'polish football'].replace(synonyms_polish_football)
+    df.loc[df['category'] == 'finnish football'] = df.loc[df['category'] == 'finnish football'].replace(synonyms_finnish_football)
+    df.loc[df['category'] == 'brazilian football'] = df.loc[df['category'] == 'brazilian'].replace(synonyms_brazilian_football)
+    df.loc[df['category'] == 'rugby'] = df.loc[df['category'] == 'rugby'].replace(synonyms_rugby)
+
+    # df = df.replace({'team_1': synonyms,
+    #                 'team_2': synonyms})
 
     return df
 
 
 # testing input
 # df = pd.read_excel(
-#     'D:\\Edukacja\\Projekty\\arbitrage_betting\\output\\20230527_144257.xlsx')[['team_1',  'team_2']]
+#     'D:\\moje\\python_projects\\arbitrage_betting\\output\\20230605_210608_scraped.xlsx')
 # rename_synonyms(df)
 
 # print(df)
