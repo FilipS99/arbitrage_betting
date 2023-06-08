@@ -16,7 +16,7 @@ def scrape_lvbet() -> pd.DataFrame():
                 ('https://lvbet.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/--/1/35381/', 'polish football'),
                 ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37529,37532,37533', 'finnish football'),
                 ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=21996,21985,21995,22043,22058', 'rugby'),
-                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=21996,21985,21995,22043,22058,37606,37307,37267,36685,36851,36582,35954,72296,72500', 'brazilian football')
+                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37606,37307,37267,36685,36851,36582,35954,72296,72500', 'brazilian football')
             ]
 
     # initialize output DataFrame

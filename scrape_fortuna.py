@@ -79,6 +79,10 @@ def scrape_fortuna() -> pd.DataFrame():
                 # Update the last recorded position
                 initial_position = new_position
 
+            # remove random value
+            while 'BetBuilder' in item:
+                item.remove('BetBuilder')
+
             item = table_element.text.split("\n")
             # 00: ['P.Niepołomice - Ch.G... Multiliga', '1.48', '4.50', '6.70', '1.11', '2.69', '1.21', '+82', '03.06. 17:30']
             

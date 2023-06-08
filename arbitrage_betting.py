@@ -69,6 +69,7 @@ if __name__ == "__main__":
                 'thread_forbet', 'thread_betfan', 'thread_totalbet' 
               ]
     
+    
     # start threads with delay
     for thread in threads:
         globals()[thread].start()
