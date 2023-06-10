@@ -14,10 +14,11 @@ import time
 def scrape_forbet() -> pd.DataFrame():
     # links
     links = [
-                ('https://www.iforbet.pl/zaklady-bukmacherskie/320', 'polish football'),
-                ('https://www.iforbet.pl/zaklady-bukmacherskie/139', 'finnish football'),
-                ('https://www.iforbet.pl/zaklady-bukmacherskie/12', 'rugby'),
-                ('https://www.iforbet.pl/zaklady-bukmacherskie/436', 'brazilian football')
+                ('https://www.iforbet.pl/zaklady-bukmacherskie/30290', 'ufc', 'two-way'),
+                ('https://www.iforbet.pl/zaklady-bukmacherskie/320', 'polish football', 'three-way'),
+                ('https://www.iforbet.pl/zaklady-bukmacherskie/139', 'finnish football', 'three-way'),
+                ('https://www.iforbet.pl/zaklady-bukmacherskie/12', 'rugby', 'three-way'),
+                ('https://www.iforbet.pl/zaklady-bukmacherskie/436', 'brazilian football', 'three-way')
              ]
 
     # initialize output DataFrame
@@ -35,7 +36,7 @@ def scrape_forbet() -> pd.DataFrame():
            
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes = link
 
         # load page
         driver.get(url)
@@ -74,19 +75,36 @@ def scrape_forbet() -> pd.DataFrame():
             while 'BETARCHITEKT' in item:
                 item.remove('BETARCHITEKT')
             
-            # if invalid data - skip 
-            if len(item) < 5 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
-                print("ForBet: Error appending - " + " | ".join(item))
-                continue
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 4 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric():
+                    print("ForBet: Error appending - " + " | ".join(item))
+                    continue
 
-            # append item
-            dct = {"team_1": teams[0],
-                "team_2": teams[1],
-                "stake_1_wins": item[1],
-                "stake_draw": item[2],
-                "stake_2_wins": item[3],
-                "url": url,
-                "category": category}
+                # append item
+                dct = {"team_1": teams[0],
+                    "team_2": teams[1],
+                    "stake_1_wins": item[1],
+                    "stake_draw": np.inf,
+                    "stake_2_wins": item[2],
+                    "url": url,
+                    "category": category}
+            
+            elif bet_outcomes == 'three-way':
+                # if invalid data - skip 
+                if len(item) < 5 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
+                    print("ForBet: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": teams[0],
+                    "team_2": teams[1],
+                    "stake_1_wins": item[1],
+                    "stake_draw": item[2],
+                    "stake_2_wins": item[3],
+                    "url": url,
+                    "category": category}\
+                    
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

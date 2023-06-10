@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     # Define the list of threads
     threads = [ 
-                'thread_betclic', 'thread_lvbet', 'thread_sts', 'thread_fortuna',  
+                'thread_sts', 'thread_betclic', 'thread_lvbet', 'thread_fortuna',  
                 'thread_superbet', 'thread_fuksiarz', 'thread_etoto', 'thread_totolotek', 
                 'thread_forbet', 'thread_betfan', 'thread_totalbet' 
               ]

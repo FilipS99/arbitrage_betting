@@ -13,10 +13,16 @@ import time
 def scrape_etoto() -> pd.DataFrame():
     # links
     links = [
-                ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga,4-liga-dolnoslaska-(baraz-o-iii-lige),4-liga-opolska,4-liga-podkarpacka/305,15462,15332,15473', 'polish football'),
-                ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/finlandia/veikkausliiga,ykkonen,kakkonen-itainen,kakkonen-lantinen,kakkonen-pohjoinen/240,289,349,390,366', 'finnish football'),
-                ('https://www.etoto.pl/zaklady-bukmacherskie/rugby/rugby-union,rugby-league/top-14,major-league-rugby,super-rugby,puchar-swiata,super-league,rfl-championship,state-of-origin/2593,5519,15034,22951,2591,6227,7679', 'rugby'),
-                ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/brazylia/serie-a,serie-d,serie-b,serie-c,campeonato-brasileiro-[k]/566,1144,734,773,1041', 'brazilian football') 
+                ('https://www.etoto.pl/zaklady-bukmacherskie/sporty-walki/ufc/ufc-289:-nunes-vs-aldana,ufc-fn:-vettori-vs-cannonier,ufc-fn:-emmett-vs-topuria,ufc-290:-volkanovski-vs-rodriguez,ufc-fn:-aspinall-vs-tybura,ufc-291:-poirier-vs-gaethje-2,ufc-292:-sterling-vs-o-malley/23444,23558,23453,23536,23537,23590,23591',
+                  'ufc', 'two-way'),
+                ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/polska/polska-1-liga,4-liga-dolnoslaska-(baraz-o-iii-lige),4-liga-opolska,4-liga-podkarpacka/305,15462,15332,15473',
+                  'polish football', 'three-way'),
+                ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/finlandia/veikkausliiga,ykkonen,kakkonen-itainen,kakkonen-lantinen,kakkonen-pohjoinen/240,289,349,390,366', 
+                  'finnish football', 'three-way'),
+                ('https://www.etoto.pl/zaklady-bukmacherskie/rugby/rugby-union,rugby-league/top-14,major-league-rugby,super-rugby,puchar-swiata,super-league,rfl-championship,state-of-origin/2593,5519,15034,22951,2591,6227,7679', 
+                  'rugby', 'three-way'),
+                ('https://www.etoto.pl/zaklady-bukmacherskie/pilka-nozna/brazylia/serie-a,serie-d,serie-b,serie-c,campeonato-brasileiro-[k]/566,1144,734,773,1041', 
+                  'brazilian football', 'three-way') 
             ]
 
     # initialize output DataFrame
@@ -34,7 +40,7 @@ def scrape_etoto() -> pd.DataFrame():
     
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes  = link
 
         # load page
         driver.get(url)
@@ -69,19 +75,37 @@ def scrape_etoto() -> pd.DataFrame():
 
             item = element.text.split('\n')
             
-            # if invalid data - skip 
-            if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
-                print("Etoto: Error appending - " + " | ".join(item))
-                continue
-            
-            # append item
-            dct = {"team_1": item[0],
-                "team_2": item[1],
-                "stake_1_wins": item[4],
-                "stake_draw": item[5],
-                "stake_2_wins": item[6],
-                "url": url,
-                "category": category}
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
+                    print("Etoto: Error appending - " + " | ".join(item))
+                    continue
+                
+                # append item
+                dct = {"team_1": item[0],
+                    "team_2": item[1],
+                    "stake_1_wins": item[4],
+                    "stake_draw": np.inf,
+                    "stake_2_wins": item[5],
+                    "url": url,
+                    "category": category}
+                
+            elif bet_outcomes == 'three-way':
+                # if invalid data - skip 
+                if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
+                    print("Etoto: Error appending - " + " | ".join(item))
+                    continue
+                
+                # append item
+                dct = {"team_1": item[0],
+                    "team_2": item[1],
+                    "stake_1_wins": item[4],
+                    "stake_draw": item[5],
+                    "stake_2_wins": item[6],
+                    "url": url,
+                    "category": category}
+                
+
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

@@ -13,10 +13,11 @@ import time
 def scrape_totolotek() -> pd.DataFrame():    
     # totolotek 1 liga
     links = [
-                ('https://www.totolotek.pl/pl/pilka-nozna/polska', 'polish football'),
-                ('https://www.totolotek.pl/pl/pilka-nozna/finlandia', 'finnish football'),
-                ('https://www.totolotek.pl/pl/rugby', 'rugby'),
-                ('https://www.totolotek.pl/pl/pilka-nozna/brazylia', 'brazilian football')
+                ('https://www.totolotek.pl/pl/mma', 'ufc', 'two-way'),
+                ('https://www.totolotek.pl/pl/pilka-nozna/polska', 'polish football', 'three-way'),
+                ('https://www.totolotek.pl/pl/pilka-nozna/finlandia', 'finnish football', 'three-way'),
+                ('https://www.totolotek.pl/pl/rugby', 'rugby', 'three-way'),
+                ('https://www.totolotek.pl/pl/pilka-nozna/brazylia', 'brazilian football', 'three-way')
             ]
 
     # initialize output DataFrame
@@ -34,7 +35,7 @@ def scrape_totolotek() -> pd.DataFrame():
 
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes = link
 
         # load page
         driver.get(url)
@@ -78,19 +79,36 @@ def scrape_totolotek() -> pd.DataFrame():
             # split row into seperate items  
             item = table_element.text.split("\n")
             
-            # if invalid data - skip 
-            if len(item) < 10 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
-                print("Totolotek: Error appending - " + " | ".join(item))
-                continue
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 8 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
+                    print("Totolotek: Error appending - " + " | ".join(item))
+                    continue
 
-            # append item
-            dct = {"team_1": item[0],
-                   "team_2": item[1],
-                   "stake_1_wins": item[5],
-                   "stake_draw": item[7],
-                   "stake_2_wins": item[9],
-                   "url": url,
-                   "category": category}
+                # append item
+                dct = {"team_1": item[0],
+                    "team_2": item[1],
+                    "stake_1_wins": item[5],
+                    "stake_draw": np.inf,
+                    "stake_2_wins": item[7],
+                    "url": url,
+                    "category": category}
+            
+            elif bet_outcomes == 'three-way': 
+                # if invalid data - skip 
+                if len(item) < 10 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
+                    print("Totolotek: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": item[0],
+                    "team_2": item[1],
+                    "stake_1_wins": item[5],
+                    "stake_draw": item[7],
+                    "stake_2_wins": item[9],
+                    "url": url,
+                    "category": category}
+
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

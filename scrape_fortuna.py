@@ -13,22 +13,23 @@ import time
 def scrape_fortuna() -> pd.DataFrame():
     # links
     links = [
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/fortuna-1-liga-polska', 'polish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-polska', 'polish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-i', 'polish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-ii', 'polish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iii', 'polish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iv', 'polish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-finlandia', 'finnish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-finlandia', 'finnish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-a', 'finnish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-b', 'finnish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-c', 'finnish football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/rugby', 'rugby'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-brazylia', 'brazilian football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-brazylia-k-', 'brazilian football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-brazylia', 'brazilian football'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-brazylia', 'brazilian football')
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/mma', 'ufc', 'two-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/fortuna-1-liga-polska', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-polska', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-i', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-ii', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iii', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iv', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-finlandia', 'finnish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-finlandia', 'finnish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-a', 'finnish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-b', 'finnish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-c', 'finnish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/rugby', 'rugby', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-brazylia', 'brazilian football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-brazylia-k-', 'brazilian football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-brazylia', 'brazilian football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-brazylia', 'brazilian football', 'three-way')
             ]
     
     # initialize output DataFrame
@@ -46,7 +47,7 @@ def scrape_fortuna() -> pd.DataFrame():
 
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes = link
 
         # load page
         driver.get(url)  
@@ -54,8 +55,13 @@ def scrape_fortuna() -> pd.DataFrame():
         # in case of 'stale' elements
         time.sleep(1)   
 
-        # get table elements of every polish football league (on the same page)
-        table_elements = driver.find_elements(By.XPATH, '/html/body/div[2]/div/div[2]/div[2]/div/div[3]/div[5]/section/div[2]/div/div/table/tbody/tr[*]')
+        # get table elements (on the same page)
+        if bet_outcomes == 'three-way':
+            table_elements = driver.find_elements(By.XPATH, '/html/body/div[2]/div/div[2]/div[2]/div/div[3]/div[5]/section/div[2]/div/div/table/tbody/tr[*]')
+
+        elif bet_outcomes == 'two-way':
+            table_elements = driver.find_elements(By.XPATH, '/html/body/div[2]/div/div[2]/div[2]/div/div[*]/section[*]/div[2]/div/div/table/tbody/tr[*]')
+                                                         
 
         for table_element in table_elements:
             # Get initial element position
@@ -79,29 +85,50 @@ def scrape_fortuna() -> pd.DataFrame():
                 # Update the last recorded position
                 initial_position = new_position
 
-            # remove random value
-            while 'BetBuilder' in item:
-                item.remove('BetBuilder')
-
             item = table_element.text.split("\n")
-            # 00: ['P.Niepołomice - Ch.G... Multiliga', '1.48', '4.50', '6.70', '1.11', '2.69', '1.21', '+82', '03.06. 17:30']
+
+            # remove redundant elements
+            patterns = ['BetBuilder']
+            item = [x for x in item if all(pattern not in x for pattern in patterns)]
             
-            teams = item[0].replace(' Polsat Sport - Multiliga', '').split(' - ')
-
-            # if invalid data - skip 
-            if len(item) < 4 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
+            try:
                 if item[0] != '':
-                    print("Fortuna: Error appending - " + " | ".join(item))
-                continue
+                    teams = table_element.find_element(By.CLASS_NAME, 'market-name').text.split(' - ')
+            except Exception as e:
+                teams = []                
 
-            # append item
-            dct = {"team_1": teams[0],
-                   "team_2": teams[1],
-                   "stake_1_wins": item[1],
-                   "stake_draw": item[2],
-                   "stake_2_wins": item[3],
-                   "url": url,
-                   "category": category}
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 4 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric():
+                    if item[0] != '':
+                        print("Fortuna: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": teams[0],
+                    "team_2": teams[1],
+                    "stake_1_wins": item[1],
+                    "stake_draw": np.inf,
+                    "stake_2_wins": item[2],
+                    "url": url,
+                    "category": category}
+            
+            elif bet_outcomes == 'three-way':    
+                # if invalid data - skip 
+                if len(item) < 4 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
+                    if item[0] != '':
+                        print("Fortuna: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": teams[0],
+                    "team_2": teams[1],
+                    "stake_1_wins": item[1],
+                    "stake_draw": item[2],
+                    "stake_2_wins": item[3],
+                    "url": url,
+                    "category": category}
+            
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

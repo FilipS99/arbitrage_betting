@@ -13,10 +13,11 @@ import time
 def scrape_totalbet() -> pd.DataFrame():
     # ligii polskie
     links = [
-                ('https://totalbet.pl/sports/events/Pilka-nozna/7486,7489,12232,13951,13952,14272,39304,39305,39308,39309,39310,39311,39312,39313,39314,39315,39316,39317,39318,39319,39320,39321,41738,41739/1', 'polish football'),
-                ('https://totalbet.pl/sports/events/Pilka-nozna/7269,7270,7272,7273,7274/1', 'finnish football'),
-                ('https://totalbet.pl/sports/events/Rugby/6631,6632,6634,6637,6650,6651,6652,30191/12', 'rugby'),
-                ('https://totalbet.pl/sports/events/Pilka-nozna/7331,7342,7344,7351,7353,29269/1', 'brazilian football')
+                ('https://totalbet.pl/sports/events/MMA-i-Kickboxing/41852,41920,42019,42036,42091/41', 'ufc', 'two-way'),
+                ('https://totalbet.pl/sports/events/Pilka-nozna/7486,7489,12232,13951,13952,14272,39304,39305,39308,39309,39310,39311,39312,39313,39314,39315,39316,39317,39318,39319,39320,39321,41738,41739/1', 'polish football', 'three-way'),
+                ('https://totalbet.pl/sports/events/Pilka-nozna/7269,7270,7272,7273,7274/1', 'finnish football', 'three-way'),
+                ('https://totalbet.pl/sports/events/Rugby/6631,6632,6634,6637,6650,6651,6652,30191/12', 'rugby', 'three-way'),
+                ('https://totalbet.pl/sports/events/Pilka-nozna/7331,7342,7344,7351,7353,29269/1', 'brazilian football', 'three-way')
             ]
     
     # initialize output DataFrame
@@ -34,7 +35,7 @@ def scrape_totalbet() -> pd.DataFrame():
 
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes = link
 
         # load page
         driver.get(url)     
@@ -69,20 +70,37 @@ def scrape_totalbet() -> pd.DataFrame():
             if item[0] == '':
                 continue
             teams = item[2].split(" - ")
-        
-            # if invalid data - skip 
-            if len(item) < 5 or len(teams) != 2 or not item[3].replace(".", "").isnumeric() or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
-                print("TotalBet: Error appending - " + " | ".join(item))
-                continue
 
-            # append item
-            dct = {"team_1": teams[0],
-                   "team_2": teams[1],
-                   "stake_1_wins": item[3],
-                   "stake_draw": item[4],
-                   "stake_2_wins": item[5],
-                   "url": url,
-                   "category": category}
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 5 or len(teams) != 2 or not item[3].replace(".", "").isnumeric() or not item[4].replace(".", "").isnumeric():
+                    print("TotalBet: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": teams[0],
+                    "team_2": teams[1],
+                    "stake_1_wins": item[3],
+                    "stake_draw": np.inf,
+                    "stake_2_wins": item[4],
+                    "url": url,
+                    "category": category}
+            
+            elif bet_outcomes == 'three-way': 
+                # if invalid data - skip 
+                if len(item) < 5 or len(teams) != 2 or not item[3].replace(".", "").isnumeric() or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
+                    print("TotalBet: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": teams[0],
+                    "team_2": teams[1],
+                    "stake_1_wins": item[3],
+                    "stake_draw": item[4],
+                    "stake_2_wins": item[5],
+                    "url": url,
+                    "category": category}
+
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

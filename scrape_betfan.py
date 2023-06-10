@@ -13,11 +13,13 @@ import time
 def scrape_betfan() -> pd.DataFrame():
     # links
     links = [
-                ('https://betfan.pl/lista-zakladow/pilka-nozna/polska/245', 'polish football'),
-                ('https://betfan.pl/lista-zakladow/pilka-nozna/finlandia/856', 'finnish football'),
-                ('https://betfan.pl/lista-zakladow/rugby/rugby-league/991', 'rugby'),
-                ('https://betfan.pl/lista-zakladow/rugby/rugby-union/674', 'rugby'),
-                ('https://betfan.pl/lista-zakladow/pilka-nozna/brazylia/240', 'brazilian football')
+                ('https://betfan.pl/lista-zakladow/pilka-nozna/polska/245', 'polish football', 'three-way'),
+                ('https://betfan.pl/lista-zakladow/pilka-nozna/finlandia/856', 'finnish football', 'three-way'),
+                ('https://betfan.pl/lista-zakladow/rugby/rugby-league/991', 'rugby', 'three-way'),
+                ('https://betfan.pl/lista-zakladow/rugby/rugby-union/674', 'rugby', 'three-way'),
+                ('https://betfan.pl/lista-zakladow/pilka-nozna/brazylia/240', 'brazilian football', 'three-way'),
+                ('https://betfan.pl/lista-zakladow/mma/ufc/1489', 'ufc', 'two-way'),
+                ('https://betfan.pl/lista-zakladow/mma/ufc/1489', 'ufc', 'two-way')
             ]
 
     # initialize output DataFrame
@@ -35,7 +37,7 @@ def scrape_betfan() -> pd.DataFrame():
 
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes = link
 
         # load page
         driver.get(url)
@@ -71,21 +73,41 @@ def scrape_betfan() -> pd.DataFrame():
             item = element.text.split('\n')
             # ['Stal Rzeszów', 'Skra Częstochowa', 'Stal Rzeszów', '1.50', 'Remis', '4.50', 'Skra Częstochowa', '6.20', '+140']
             
-            # if invalid data - skip 
-            if len(item) < 7 or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
-                if item[0] == '':
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 7 or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
+                    if item[0] == '':
+                        continue
+                    print("BetFan: Error appending - " + " | ".join(item))
                     continue
-                print("BetFan: Error appending - " + " | ".join(item))
-                continue
-            
-            # append item
-            dct = {"team_1": item[0],
-                "team_2": item[1],
-                "stake_1_wins": item[3],
-                "stake_draw": item[5],
-                "stake_2_wins": item[7],
-                "url": url,
-                "category": category}
+                
+                # append item
+                dct = {"team_1": item[0],
+                    "team_2": item[1],
+                    "stake_1_wins": item[3],
+                    "stake_draw": np.inf,
+                    "stake_2_wins": item[5],
+                    "url": url,
+                    "category": category}
+                
+            elif bet_outcomes == 'three-way':
+                # if invalid data - skip 
+                if len(item) < 7 or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
+                    if item[0] == '':
+                        continue
+                    print("BetFan: Error appending - " + " | ".join(item))
+                    continue
+                
+                # append item
+                dct = {"team_1": item[0],
+                    "team_2": item[1],
+                    "stake_1_wins": item[3],
+                    "stake_draw": item[5],
+                    "stake_2_wins": item[7],
+                    "url": url,
+                    "category": category}
+
+
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

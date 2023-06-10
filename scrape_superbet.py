@@ -13,10 +13,11 @@ import time
 def scrape_superbet() -> pd.DataFrame():
     # SUPERBET
     links = [
-                ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/', 'polish football'),
-                ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/finlandia', 'finnish football'),
-                ('https://superbet.pl/zaklady-bukmacherskie/rugby', 'rugby'),
-                ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/brazylia', 'brazilian football')
+                ('https://superbet.pl/zaklady-bukmacherskie/sporty-walki/ufc', 'ufc', 'two-way'),
+                ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/polska/', 'polish football', 'three-way'),
+                ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/finlandia', 'finnish football', 'three-way'),
+                ('https://superbet.pl/zaklady-bukmacherskie/rugby', 'rugby', 'three-way'),
+                ('https://superbet.pl/zaklady-bukmacherskie/pilka-nozna/brazylia', 'brazilian football', 'three-way')
             ]
 
     # initialize output DataFrame
@@ -34,7 +35,7 @@ def scrape_superbet() -> pd.DataFrame():
 
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes = link
 
         # load page
         driver.get(url)
@@ -73,19 +74,36 @@ def scrape_superbet() -> pd.DataFrame():
             item = table_element.text.split("\n")
             # ['SOB.', '17:30', 'Niepołomice', 'Głogów', '2448', '1.47', '1.47', '4.50', '4.50', '6.50', '6.50', '+129']
             
-            # if invalid data - skip 
-            if len(item) < 12 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
-                print("SuperBet: Error appending - " + " | ".join(item))
-                continue
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 8 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
+                    print("SuperBet: Error appending - " + " | ".join(item))
+                    continue
 
-            # append item
-            dct = {"team_1": item[2],
-                    "team_2": item[3],
-                    "stake_1_wins": item[5],
-                    "stake_draw": item[7],
-                    "stake_2_wins": item[9],
-                    "url": url,
-                    "category": category}
+                # append item
+                dct = {"team_1": item[2],
+                        "team_2": item[3],
+                        "stake_1_wins": item[5],
+                        "stake_draw": np.inf,
+                        "stake_2_wins": item[7],
+                        "url": url,
+                        "category": category}
+            
+            elif bet_outcomes == 'three-way': 
+                # if invalid data - skip 
+                if len(item) < 12 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
+                    print("SuperBet: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": item[2],
+                        "team_2": item[3],
+                        "stake_1_wins": item[5],
+                        "stake_draw": item[7],
+                        "stake_2_wins": item[9],
+                        "url": url,
+                        "category": category}
+
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

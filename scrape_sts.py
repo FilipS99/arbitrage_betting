@@ -12,11 +12,12 @@ import time
 
 def scrape_sts() -> pd.DataFrame():
     links = [
-                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/184/30860/', 'polish football'),
-                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/finlandia/184/30891/', 'finnish football'),
-                ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-league/195/31059/', 'rugby'),
-                ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-union/195/31057/', 'rugby'),
-                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/brazylia/184/30863/', 'brazilian football')
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/sporty-walki/mma/ufc/211/6594/84954/', 'ufc', 'two-way'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/184/30860/', 'polish football', 'three-way'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/finlandia/184/30891/', 'finnish football', 'three-way'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-league/195/31059/', 'rugby', 'three-way'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-union/195/31057/', 'rugby', 'three-way'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/brazylia/184/30863/', 'brazilian football', 'three-way')
             ]
     
     # initialize output DataFrame
@@ -27,7 +28,7 @@ def scrape_sts() -> pd.DataFrame():
     # Chrome instance in nested, since STS blocks quick page changes with Captcha
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes = link
 
         # chrome driver setup
         options = Options()
@@ -71,20 +72,38 @@ def scrape_sts() -> pd.DataFrame():
             item = table_element.text.split("\n")
             # ['Nieciecza', '2.01', 'X', '3.55', 'Arka', '3.50']
 
-            # if invalid data - skip 
-            if len(item) != 6 or not item[1].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
-                if item[0] != '':
-                    print("STS: Error appending - " + " | ".join(item))
-                continue
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 4 or not item[1].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
+                    if item[0] != '':
+                        print("STS: Error appending - " + " | ".join(item))
+                    continue
 
-            # append item
-            dct = {"team_1": item[0],
-                   "team_2": item[4],
-                   "stake_1_wins": item[1],
-                   "stake_draw": item[3],
-                   "stake_2_wins": item[5],
-                   "url": url,
-                   "category": category}
+                # append item
+                dct = {"team_1": item[0],
+                    "team_2": item[2],
+                    "stake_1_wins": item[1],
+                    "stake_draw": np.inf,
+                    "stake_2_wins": item[3],
+                    "url": url,
+                    "category": category}
+            
+            elif bet_outcomes == 'three-way': 
+                # if invalid data - skip 
+                if len(item) != 6 or not item[1].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
+                    if item[0] != '':
+                        print("STS: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": item[0],
+                    "team_2": item[4],
+                    "stake_1_wins": item[1],
+                    "stake_draw": item[3],
+                    "stake_2_wins": item[5],
+                    "url": url,
+                    "category": category}
+
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 
@@ -100,5 +119,5 @@ def scrape_sts() -> pd.DataFrame():
 
 # df = pd.DataFrame()
 # df = df._append(scrape_sts(), ignore_index=True)
-# print("STS STS STS", df.head())
+# print(df.head())
 

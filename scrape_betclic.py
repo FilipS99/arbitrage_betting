@@ -11,33 +11,34 @@ import time
 
 
 def scrape_betclic() -> pd.DataFrame():
-    # links
+    # links (url, category, 2/3 way bet)
     links = [
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-1-liga-c1749', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-2-liga-c2836', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-2-c22093', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-1-c22012', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-podkarpacka-c25999', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-zachodniopomorska-c26010', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-3-c22107', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-4-c21798', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-kujawsko-pomorska-c25994', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-swietokrzyska-c26007', 'polish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-1-liga-c146', 'finnish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kolmonen-c21892', 'finnish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-2-liga-c494', 'finnish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-a-c7467', 'finnish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-b-c7468', 'finnish football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-c-c7469', 'finnish football'),
-                ('https://www.betclic.pl/rugby-xiii-s52', 'rugby'),
-                ('https://www.betclic.pl/rugby-xv-s5', 'rugby'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-campeonato-k-c21767', 'brazilian football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-a-c187', 'brazilian football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-c-c19658', 'brazilian football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazilia-carioca-3-c26087', 'brazilian football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazilia-carioca-b2-u20-c24650', 'brazilian football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-b-c3454', 'brazilian football'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-d-c22011', 'brazilian football')
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-1-liga-c1749', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-2-liga-c2836', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-2-c22093', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-1-c22012', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-podkarpacka-c25999', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-zachodniopomorska-c26010', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-3-c22107', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-4-c21798', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-kujawsko-pomorska-c25994', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-swietokrzyska-c26007', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-1-liga-c146', 'finnish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kolmonen-c21892', 'finnish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-2-liga-c494', 'finnish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-a-c7467', 'finnish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-b-c7468', 'finnish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-c-c7469', 'finnish football', 'three-way'),
+                ('https://www.betclic.pl/rugby-xiii-s52', 'rugby', 'three-way'),
+                ('https://www.betclic.pl/rugby-xv-s5', 'rugby', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-campeonato-k-c21767', 'brazilian football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-a-c187', 'brazilian football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-c-c19658', 'brazilian football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/brazilia-carioca-3-c26087', 'brazilian football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/brazilia-carioca-b2-u20-c24650', 'brazilian football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-b-c3454', 'brazilian football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-d-c22011', 'brazilian football', 'three-way'),
+                ('https://www.betclic.pl/sztuki-walki-s23/ufc-c15946', 'ufc', 'two-way')
             ]
     
     # initialize output DataFrame
@@ -55,7 +56,7 @@ def scrape_betclic() -> pd.DataFrame():
 
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes = link
 
         # load page
         driver.get(url)     
@@ -91,19 +92,35 @@ def scrape_betclic() -> pd.DataFrame():
             item = table_element.text.split("\n")
             stakes = list(filter(lambda x: x.replace(",", "").isnumeric(), item))
             
-            # if invalid data - skip 
-            if len(item) < 11 or len(stakes) != 3:
-                print("BetClic: Error appending - " + " | ".join(item))
-                continue
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 10 or len(stakes) != 2:
+                    print("BetClic: Error appending - " + " | ".join(item))
+                    continue
 
-            # append item
-            dct = {"team_1": item[3],
-                   "team_2": item[5],
-                   "stake_1_wins": stakes[0].replace(",", "."),
-                   "stake_draw": stakes[1].replace(",", "."),
-                   "stake_2_wins": stakes[2].replace(",", "."),
-                   "url": url,
-                   "category": category}
+                # append item
+                dct = {"team_1": item[3],
+                    "team_2": item[5],
+                    "stake_1_wins": stakes[0].replace(",", "."),
+                    "stake_draw": np.inf,
+                    "stake_2_wins": stakes[1].replace(",", "."),
+                    "url": url,
+                    "category": category}
+            
+            elif bet_outcomes == 'three-way':
+                # if invalid data - skip 
+                if len(item) < 11 or len(stakes) != 3:
+                    print("BetClic: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": item[3],
+                    "team_2": item[5],
+                    "stake_1_wins": stakes[0].replace(",", "."),
+                    "stake_draw": stakes[1].replace(",", "."),
+                    "stake_2_wins": stakes[2].replace(",", "."),
+                    "url": url,
+                    "category": category}
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 

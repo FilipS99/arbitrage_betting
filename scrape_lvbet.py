@@ -13,10 +13,11 @@ import time
 def scrape_lvbet() -> pd.DataFrame():
     # lvbet polska piłka nożna
     links = [
-                ('https://lvbet.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/--/1/35381/', 'polish football'),
-                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37529,37532,37533', 'finnish football'),
-                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=21996,21985,21995,22043,22058', 'rugby'),
-                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37606,37307,37267,36685,36851,36582,35954,72296,72500', 'brazilian football')
+                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=20773', 'ufc', 'two-way'),
+                ('https://lvbet.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/--/1/35381/', 'polish football', 'three-way'),
+                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37529,37532,37533', 'finnish football', 'three-way'),
+                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=21996,21985,21995,22043,22058', 'rugby', 'three-way'),
+                ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=37606,37307,37267,36685,36851,36582,35954,72296,72500', 'brazilian football', 'three-way')
             ]
 
     # initialize output DataFrame
@@ -34,7 +35,7 @@ def scrape_lvbet() -> pd.DataFrame():
            
     for link in links:
         # unpack tuple
-        url, category = link
+        url, category, bet_outcomes = link
 
         # load page
         driver.get(url)
@@ -69,21 +70,42 @@ def scrape_lvbet() -> pd.DataFrame():
                 initial_position = new_position
 
             # split row into seperate items  
-            item = table_element.text.split("\n")
+            item = table_element.text.split("\n") 
             
-            # if invalid data - skip 
-            if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
-                print("LvBet: Error appending - " + " | ".join(item))
-                continue
+            # remove redundant elements
+            patterns = ['betbuilder']
+            item = [x for x in item if all(pattern not in x for pattern in patterns)]
 
-            # append item
-            dct = {"team_1": item[2],
-                   "team_2": item[3],
-                   "stake_1_wins": item[4],
-                   "stake_draw": item[5],
-                   "stake_2_wins": item[6],
-                   "url": url,
-                   "category": category}
+            if bet_outcomes == 'two-way':
+                # if invalid data - skip 
+                if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
+                    print("LvBet: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": item[2],
+                    "team_2": item[3],
+                    "stake_1_wins": item[4],
+                    "stake_draw": np.inf,
+                    "stake_2_wins": item[6],
+                    "url": url,
+                    "category": category}
+            
+            elif bet_outcomes == 'three-way': 
+                # if invalid data - skip 
+                if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
+                    print("LvBet: Error appending - " + " | ".join(item))
+                    continue
+
+                # append item
+                dct = {"team_1": item[2],
+                    "team_2": item[3],
+                    "stake_1_wins": item[4],
+                    "stake_draw": item[5],
+                    "stake_2_wins": item[6],
+                    "url": url,
+                    "category": category}
+
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)
 
