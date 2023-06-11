@@ -8,6 +8,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import numpy as np
 import pandas as pd
 import time
+from additional_functions import scroll_into_view
 
 
 def scrape_betfan() -> pd.DataFrame():
@@ -23,7 +24,7 @@ def scrape_betfan() -> pd.DataFrame():
             ]
 
     # initialize output DataFrame
-    columns = ["team_1",  "team_2", "stake_1_wins",
+    columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
     
@@ -33,7 +34,7 @@ def scrape_betfan() -> pd.DataFrame():
     options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(5)
+    driver.implicitly_wait(3)
 
     for link in links:
         # unpack tuple
@@ -46,64 +47,49 @@ def scrape_betfan() -> pd.DataFrame():
         time.sleep(3)
 
         # scrape rows
-        elements = driver.find_elements(By.XPATH,'/html/body/div[1]/div[2]/main/div[3]/div/div[*]/div[2]/div[*]/div/div[2]') 
+        elements = driver.find_elements(By.XPATH,'/html/body/div[1]/div[2]/main/div[3]/div/div[*]/div[2]/div[*]') 
 
         for element in elements:
-            # Get initial element position
-            initial_position = element.location["y"]
-
-            # Scroll loop - until element is visible
-            while True:
-                # Scroll to the element's bottom position
-                driver.execute_script("arguments[0].scrollIntoView(false);", element)
-                
-                # Wait for a short interval to allow content to load
-                # time.sleep(0.1)
-                
-                # Calculate the new element position after scrolling
-                new_position = element.location["y"]
-                
-                # Break the loop if the element's position remains the same (reached the bottom)
-                if new_position == initial_position:
-                    break
-                
-                # Update the last recorded position
-                initial_position = new_position
+            scroll_into_view(driver, element, sleep=0.5)
 
             item = element.text.split('\n')
             # ['Stal Rzeszów', 'Skra Częstochowa', 'Stal Rzeszów', '1.50', 'Remis', '4.50', 'Skra Częstochowa', '6.20', '+140']
             
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
-                if len(item) < 7 or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
+                if len(item) < 8 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
                     if item[0] == '':
                         continue
                     print("BetFan: Error appending - " + " | ".join(item))
                     continue
                 
                 # append item
-                dct = {"team_1": item[0],
-                    "team_2": item[1],
-                    "stake_1_wins": item[3],
+                dct = {
+                    "game_datetime": item[1],
+                    "team_1": item[2],
+                    "team_2": item[3],
+                    "stake_1_wins": item[5],
                     "stake_draw": np.inf,
-                    "stake_2_wins": item[5],
+                    "stake_2_wins": item[7],
                     "url": url,
                     "category": category}
                 
             elif bet_outcomes == 'three-way':
                 # if invalid data - skip 
-                if len(item) < 7 or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
+                if len(item) < 9 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
                     if item[0] == '':
                         continue
                     print("BetFan: Error appending - " + " | ".join(item))
                     continue
                 
                 # append item
-                dct = {"team_1": item[0],
-                    "team_2": item[1],
-                    "stake_1_wins": item[3],
-                    "stake_draw": item[5],
-                    "stake_2_wins": item[7],
+                dct = {
+                    "game_datetime": item[1],
+                    "team_1": item[2],
+                    "team_2": item[3],
+                    "stake_1_wins": item[5],
+                    "stake_draw": item[7],
+                    "stake_2_wins": item[9],
                     "url": url,
                     "category": category}
 
