@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import time
 
+from additional_functions import scroll_into_view
 
 def scrape_forbet() -> pd.DataFrame():
     # links
@@ -22,7 +23,7 @@ def scrape_forbet() -> pd.DataFrame():
              ]
 
     # initialize output DataFrame
-    columns = ["team_1",  "team_2", "stake_1_wins",
+    columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
 
@@ -48,26 +49,8 @@ def scrape_forbet() -> pd.DataFrame():
         elements = driver.find_elements(By.XPATH, '/html/body/div[1]/div/div/main/div[2]/div/div/div/div[1]/section/div/section[*]/div/section[*]/div[*]') 
                                                                 
         for element in elements:
-            # Get initial element position
-            initial_position = element.location["y"]
-            # Scroll loop - until element is visible
-            while True:
-                # Scroll to the element's bottom position
-                driver.execute_script("arguments[0].scrollIntoView(false);", element)
-                
-                # Wait for a short interval to allow content to load
-                time.sleep(0.1)
-                
-                # Calculate the new element position after scrolling
-                new_position = element.location["y"]
-                
-                # Break the loop if the element's position remains the same (reached the bottom)
-                if new_position == initial_position:
-                    break
-                
-                # Update the last recorded position
-                initial_position = new_position
-                
+            scroll_into_view(driver, element, sleep=0.1)
+            
             item = element.text.split('\n')[1:]
             teams = item[0].split(' - ')
 

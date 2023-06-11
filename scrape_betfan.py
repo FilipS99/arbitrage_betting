@@ -8,6 +8,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import numpy as np
 import pandas as pd
 import time
+
 from additional_functions import scroll_into_view
 
 
