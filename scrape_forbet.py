@@ -56,8 +56,8 @@ def scrape_forbet() -> pd.DataFrame():
             for element in elements:
                 scroll_into_view(driver, element, sleep=0.1)
                 
-                item = element.text.split('\n')[1:]
-                teams = item[0].split(' - ')
+                item = element.text.split('\n')
+                teams = item[1].split(' - ')
 
                 # remove random value
                 while 'BETARCHITEKT' in item:
@@ -65,7 +65,7 @@ def scrape_forbet() -> pd.DataFrame():
                 
                 if bet_outcomes == 'two-way':
                     # if invalid data - skip 
-                    if len(item) < 4 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric():
+                    if len(item) < 5 or len(teams) != 2 or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
                         print("ForBet: Error appending - " + " | ".join(item))
                         continue
 
@@ -73,16 +73,16 @@ def scrape_forbet() -> pd.DataFrame():
                     dct = {"game_datetime": events_date + ' ' + item[0],
                            "team_1": teams[0],
                            "team_2": teams[1],
-                           "stake_1_wins": item[1],
+                           "stake_1_wins": item[2],
                            "stake_draw": np.inf,
-                           "stake_2_wins": item[2],
+                           "stake_2_wins": item[3],
                            "url": url,
                            "category": category
                         }
                 
                 elif bet_outcomes == 'three-way':
                     # if invalid data - skip 
-                    if len(item) < 5 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
+                    if len(item) < 6 or len(teams) != 2 or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric() or not item[4].replace(".", "").isnumeric():
                         print("ForBet: Error appending - " + " | ".join(item))
                         continue
 
@@ -90,9 +90,9 @@ def scrape_forbet() -> pd.DataFrame():
                     dct = {"game_datetime": events_date + ' ' + item[0],
                            "team_1": teams[0],
                            "team_2": teams[1],
-                           "stake_1_wins": item[1],
-                           "stake_draw": item[2],
-                           "stake_2_wins": item[3],
+                           "stake_1_wins": item[2],
+                           "stake_draw": item[3],
+                           "stake_2_wins": item[4],
                            "url": url,
                            "category": category
                         }
@@ -112,5 +112,5 @@ def scrape_forbet() -> pd.DataFrame():
 
 # df = pd.DataFrame()
 # df = df._append(scrape_forbet(), ignore_index=True)
-print(df.head())
+# print(df.head())
 
