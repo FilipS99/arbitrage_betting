@@ -1,13 +1,10 @@
-import traceback
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
 import numpy as np
 import pandas as pd
 import time
+from datetime import datetime
 
 from additional_functions import scroll_into_view
 
@@ -66,7 +63,7 @@ def scrape_betfan() -> pd.DataFrame():
                 
                 # append item
                 dct = {
-                    "game_datetime": item[1],
+                    "game_datetime": item[1].replace('.','-').replace('Jutro', datetime.now().strftime("%d-%m-%Y ")),
                     "team_1": item[2],
                     "team_2": item[3],
                     "stake_1_wins": item[5],
@@ -85,7 +82,7 @@ def scrape_betfan() -> pd.DataFrame():
                 
                 # append item
                 dct = {
-                    "game_datetime": item[1],
+                    "game_datetime": item[1].replace('.','-').replace('Jutro', datetime.now().strftime("%d-%m-%Y ")),
                     "team_1": item[2],
                     "team_2": item[3],
                     "stake_1_wins": item[5],

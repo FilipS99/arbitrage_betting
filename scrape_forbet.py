@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 import numpy as np
 import pandas as pd
 import time
-from datetime import datetime, date
+from datetime import date
 
 from additional_functions import scroll_into_view
 

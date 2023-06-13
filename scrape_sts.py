@@ -1,13 +1,11 @@
-import traceback
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
 import numpy as np
 import pandas as pd
 import time
+
+from additional_functions import scroll_into_view
 
 
 def scrape_sts() -> pd.DataFrame():
@@ -21,7 +19,7 @@ def scrape_sts() -> pd.DataFrame():
             ]
     
     # initialize output DataFrame
-    columns = ["team_1",  "team_2", "stake_1_wins",
+    columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
     
@@ -36,7 +34,7 @@ def scrape_sts() -> pd.DataFrame():
         options.add_argument("--start-maximized")
         options.add_argument('--ignore-certificate-errors')
         driver = webdriver.Chrome(options=options)
-        driver.implicitly_wait(5)
+        # driver.implicitly_wait(3)
 
         # load page
         driver.get(url)     
@@ -45,32 +43,20 @@ def scrape_sts() -> pd.DataFrame():
         time.sleep(3)
 
         # get table elements of every polish football league (on the same page)
-        table_elements = driver.find_elements(By.XPATH, '/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div/div/table[*]/tbody/tr/td[2]/table/tbody/tr')
+        table_elements = driver.find_elements(By.XPATH, '/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div/div/table[*]')
 
         for table_element in table_elements:
-            # Get initial element position
-            initial_position = table_element.location["y"]
+            scroll_into_view(driver, table_element, sleep=0)
 
-            # Scroll loop - until element is visible
-            while True:
-                # Scroll to the element's bottom position
-                driver.execute_script("arguments[0].scrollIntoView(false);", table_element)
-                
-                # Wait for a short interval to allow content to load
-                # time.sleep(0.1)
-                
-                # Calculate the new element position after scrolling
-                new_position = table_element.location["y"]
-                
-                # Break the loop if the element's position remains the same (reached the bottom)
-                if new_position == initial_position:
-                    break
-                
-                # Update the last recorded position
-                initial_position = new_position
+            # set current section date (inherit previous date if doesnt exist)
+            event_date_element = table_element.find_elements(By.XPATH, './thead')
+            event_date = event_date_element[0].text[-10:] if len(event_date_element) else event_date
 
-            item = table_element.text.split("\n")
-            # ['Nieciecza', '2.01', 'X', '3.55', 'Arka', '3.50']
+            # get elements time class text
+            event_time = table_element.find_element(By.XPATH, ".//*[contains(@class, 'date_time')]").text
+            
+            item = table_element.find_element(By.XPATH, "./tbody/tr/td[2]/table/tbody").text.split("\n")
+
 
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
@@ -80,29 +66,33 @@ def scrape_sts() -> pd.DataFrame():
                     continue
 
                 # append item
-                dct = {"team_1": item[0],
-                    "team_2": item[2],
-                    "stake_1_wins": item[1],
-                    "stake_draw": np.inf,
-                    "stake_2_wins": item[3],
-                    "url": url,
-                    "category": category}
+                dct = {"game_datetime": (event_date + ' ' + event_time).replace('.','-'), 
+                       "team_1": item[0],
+                       "team_2": item[2],
+                       "stake_1_wins": item[1],
+                       "stake_draw": np.inf,
+                       "stake_2_wins": item[3],
+                       "url": url,
+                       "category": category
+                       }
             
             elif bet_outcomes == 'three-way': 
                 # if invalid data - skip 
-                if len(item) != 6 or not item[1].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
+                if len(item) < 6 or not item[1].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
                     if item[0] != '':
                         print("STS: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
-                dct = {"team_1": item[0],
-                    "team_2": item[4],
-                    "stake_1_wins": item[1],
-                    "stake_draw": item[3],
-                    "stake_2_wins": item[5],
-                    "url": url,
-                    "category": category}
+                dct = {"game_datetime": (event_date + ' ' + event_time).replace('.','-'),
+                       "team_1": item[0],
+                       "team_2": item[4],
+                       "stake_1_wins": item[1],
+                       "stake_draw": item[3],
+                       "stake_2_wins": item[5],
+                       "url": url,
+                       "category": category
+                       }
 
             df = df._append(pd.DataFrame(
                 [dct], columns=columns), ignore_index=True)

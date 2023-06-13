@@ -62,7 +62,7 @@ def scrape_etoto() -> pd.DataFrame():
                     continue
                 
                 # append item
-                dct = {"game_datetime": item[2].replace('.', '-') + datetime.now().strftime("-%y ") + item[3],
+                dct = {"game_datetime": item[2].replace('.', '-') + datetime.now().strftime("-%Y ") + item[3],
                        "team_1": item[0],
                        "team_2": item[1],
                        "stake_1_wins": item[4],

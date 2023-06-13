@@ -46,8 +46,6 @@ if __name__ == "__main__":
 
     # setup
     df = pd.DataFrame()
-    # expected columns
-    # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url", "category"]
 
     # Create thread objects for each function
     thread_sts = ScrapeThread(target_func=scrape_sts)
@@ -88,7 +86,7 @@ if __name__ == "__main__":
     for thread in threads:
         result = globals()[thread].result
         if not isinstance(result, pd.DataFrame):
-            print(f"\n{thread.capitalize()}: CRITICAL ERROR")
+            print(f"\n{thread.capitalize()}: CRITICAL ERROR\n")
         else:
             # append category_size_per_page
             category_size_per_page[thread] = result.groupby(['category']).size()
