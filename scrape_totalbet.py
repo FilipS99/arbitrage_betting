@@ -40,6 +40,10 @@ def scrape_totalbet() -> pd.DataFrame():
         # in case of 'stale' elements
         time.sleep(3)
 
+        # Get the current URL, skip if redirectred
+        if url != driver.current_url:
+            continue
+
         # get table elements of every polish football league (on the same page)
         elements = driver.find_elements(By.XPATH, '/html/body/div[*]/div[2]/div[3]/div/div/div[3]/partial[3]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li')
                                                          

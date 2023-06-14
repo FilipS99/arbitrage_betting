@@ -41,6 +41,10 @@ def scrape_totolotek() -> pd.DataFrame():
         # in case of 'stale' elements
         time.sleep(3)
 
+        # Get the current URL, skip if redirectred
+        if url != driver.current_url:
+            continue
+
         # find elements until each is loaded
         last_elements_count = 0
         current_elements_count = -1       

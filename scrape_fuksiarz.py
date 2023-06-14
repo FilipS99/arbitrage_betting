@@ -42,6 +42,9 @@ def scrape_fuksiarz() -> pd.DataFrame():
         # in case of 'stale' elements
         time.sleep(3)
 
+        # Get the current URL, skip if redirectred
+        if url != driver.current_url:
+            continue
 
         elements = driver.find_elements(By.XPATH, f'/html/body/div[3]/div[2]/div[1]/div[2]/div[3]/div/div/div[3]/partial[*]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li') 
         

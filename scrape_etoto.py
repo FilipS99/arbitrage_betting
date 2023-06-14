@@ -47,6 +47,10 @@ def scrape_etoto() -> pd.DataFrame():
         # in case of 'stale' elements
         time.sleep(3)
 
+        # Get the current URL, skip if redirectred
+        if url != driver.current_url:
+            continue
+
         # scrape rows
         elements = driver.find_elements(By.XPATH,'/html/body/div[3]/div[3]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul') 
 

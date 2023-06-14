@@ -40,6 +40,10 @@ def scrape_forbet() -> pd.DataFrame():
         
         # in case of 'stale' elements
         time.sleep(3)
+
+        # Get the current URL, skip if redirectred
+        if url != driver.current_url:
+            continue
         
         # scrape sections 
         sections = driver.find_elements(By.XPATH,'/html/body/div[1]/div/div/main/div[2]/div/div/div/div[1]/section/div/section[*]/div/section') 

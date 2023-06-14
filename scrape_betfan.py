@@ -44,6 +44,10 @@ def scrape_betfan() -> pd.DataFrame():
         # in case of 'stale' elements
         time.sleep(3)
 
+        # Get the current URL, skip if redirectred
+        if url != driver.current_url:
+            continue
+
         # scrape rows
         elements = driver.find_elements(By.XPATH,'/html/body/div[1]/div[2]/main/div[3]/div/div[*]/div[2]/div[*]') 
 

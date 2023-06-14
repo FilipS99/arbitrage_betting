@@ -42,6 +42,10 @@ def scrape_lvbet() -> pd.DataFrame():
         # in case of 'stale' elements
         time.sleep(3)
 
+        # Get the current URL, skip if redirectred
+        if url != driver.current_url:
+            continue
+
         # get table elements of every polish football league (on the same page)
         elements = driver.find_elements(
                         By.CLASS_NAME, 'odds-table__entry')
