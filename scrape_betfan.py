@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 import numpy as np
 import pandas as pd
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from additional_functions import scroll_into_view
 
@@ -47,11 +47,20 @@ def scrape_betfan() -> pd.DataFrame():
         # scrape rows
         elements = driver.find_elements(By.XPATH,'/html/body/div[1]/div[2]/main/div[3]/div/div[*]/div[2]/div[*]') 
 
-        for element in elements:
-            scroll_into_view(driver, element, sleep=0.5)
+        for index, element in enumerate(elements):
+            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
 
             item = element.text.split('\n')
-            # ['Stal Rzeszów', 'Skra Częstochowa', 'Stal Rzeszów', '1.50', 'Remis', '4.50', 'Skra Częstochowa', '6.20', '+140']
+
+            if len(item) > 1:
+                # Get current date
+                current_date = datetime.now().strftime("%d.%m.%Y ")
+
+                # Get tomorrow's date
+                tomorrow_date = (datetime.now() + timedelta(days=1)).strftime("%d.%m.%Y ")
+
+                # Replace "today" and "tomorrow" with their respective dates
+                item[1] = item[1].replace('Jutro', tomorrow_date).replace('Dziś', current_date)
             
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
@@ -63,7 +72,7 @@ def scrape_betfan() -> pd.DataFrame():
                 
                 # append item
                 dct = {
-                    "game_datetime": item[1].replace('.','-').replace('Jutro', datetime.now().strftime("%d-%m-%Y ")),
+                    "game_datetime": datetime.strptime(item[1], "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M"),
                     "team_1": item[2],
                     "team_2": item[3],
                     "stake_1_wins": item[5],
@@ -79,10 +88,10 @@ def scrape_betfan() -> pd.DataFrame():
                         continue
                     print("BetFan: Error appending - " + " | ".join(item))
                     continue
-                
+
                 # append item
                 dct = {
-                    "game_datetime": item[1].replace('.','-').replace('Jutro', datetime.now().strftime("%d-%m-%Y ")),
+                    "game_datetime": datetime.strptime(item[1], "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M"),
                     "team_1": item[2],
                     "team_2": item[3],
                     "stake_1_wins": item[5],

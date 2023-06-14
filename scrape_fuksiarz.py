@@ -13,7 +13,7 @@ def scrape_fuksiarz() -> pd.DataFrame():
     # links
     links = [
                 ('https://fuksiarz.pl/zaklady-bukmacherskie/mma/ufc/ufc/6657/41', 'ufc', 'two-way'),
-                ('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/polska/1-liga-polska,3-liga-gr-i,2-liga-polska,3-liga-gr-ii,3-liga-gr-iii,3-liga-gr-iv,4-liga,regionalny-puchar-polski/517,602,537,594,575,597,1294,179592/1', 'polish football', 'three-way'),
+                ('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/polska/4-liga-slaska-baraz,4-liga-podkarpacka,4-liga-lodzka,superpuchar-polski,ekstraklasa,1-liga-polska,3-liga-gr-i,2-liga-polska,3-liga-gr-ii,3-liga-gr-iii,3-liga-gr-iv,4-liga,regionalny-puchar-polski/202608,202605,202614,1319,265,517,602,537,594,575,597,1294,179592/1', 'polish football', 'three-way'),
                 ('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/finlandia/1-liga,2-liga,3-liga/693,912,144998/1', 'finnish football', 'three-way'),
                 ('https://fuksiarz.pl/zaklady-bukmacherskie/rugby/rugby-league,rugby-union/anglia-super-league,australia-nrl,rfl-championship,puchar-swiata,super-rugby,francja-top-14/1261,585,95327,198619,2375,1785/12', 'rugby', 'three-way'),
                 ('https://fuksiarz.pl/zaklady-bukmacherskie/pilka-nozna/brazylia/1-liga,2-liga,3-liga,4-liga,1-liga-(k)/710,749,1324,1816,1640/1', 'brazilian football', 'three-way')
@@ -45,8 +45,8 @@ def scrape_fuksiarz() -> pd.DataFrame():
 
         elements = driver.find_elements(By.XPATH, f'/html/body/div[3]/div[2]/div[1]/div[2]/div[3]/div/div/div[3]/partial[*]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li') 
         
-        for element in elements:
-            scroll_into_view(driver, element, sleep=0.1)
+        for index, element in enumerate(elements):
+            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
                 
             item = element.text.split('\n')
             teams = item[2].split(' - ')
@@ -58,7 +58,7 @@ def scrape_fuksiarz() -> pd.DataFrame():
                     continue
 
                 # append item
-                dct = {"game_datetime": (item[1] + datetime.now().strftime("-%Y ") + item[0]).replace('.','-'),
+                dct = {"game_datetime": (item[1] + ' ' + item[0]).replace('.','-'),
                        "team_1": teams[0],
                        "team_2": teams[1],
                        "stake_1_wins": item[3],
@@ -75,7 +75,7 @@ def scrape_fuksiarz() -> pd.DataFrame():
                     continue
 
                 # append item
-                dct = {"game_datetime": (item[1] + datetime.now().strftime("-%Y ") + item[0]).replace('.','-'),
+                dct = {"game_datetime": (item[1] + ' ' + item[0]).replace('.','-'),
                        "team_1": teams[0],
                        "team_2": teams[1],
                        "stake_1_wins": item[3],

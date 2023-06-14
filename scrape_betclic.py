@@ -66,8 +66,8 @@ def scrape_betclic() -> pd.DataFrame():
         # get table elements of every polish football league (on the same page)
         group_events = driver.find_elements(By.CLASS_NAME, 'groupEvents')
                                                          
-        for group_event in group_events:
-            scroll_into_view(driver, group_event, sleep=0)
+        for index, group_event in enumerate(group_events):
+            scroll_into_view(driver, group_events[min(index+5, len(group_events)-1)], sleep=0)
 
             # scrape events date (common for section)
             events_date = group_event.find_element(By.CLASS_NAME, "groupEvents_headTitle").text
@@ -82,8 +82,18 @@ def scrape_betclic() -> pd.DataFrame():
             elif events_date == 'Pojutrze':
                 events_date = (date.today() + timedelta(days=2)).strftime("%d.%m.%Y")
 
-            # scrape events wtithin section
-            events = group_event.find_elements(By.CLASS_NAME, "cardEvent")
+            # scrape events wtithin section & find elements until each is loaded
+            last_elements_count = 0
+            current_elements_count = -1       
+            while last_elements_count != current_elements_count:
+                last_elements_count = current_elements_count
+                # get table elements of every league (on the same page)
+                events = group_event.find_elements(By.CLASS_NAME, "cardEvent")
+                current_elements_count = len(events)
+                
+                if current_elements_count > 0:
+                    # scroll to last loaded element
+                    driver.execute_script("arguments[0].scrollIntoView(false);", events[-1])
 
             for event in events:
                 scroll_into_view(driver, event, sleep=0)
@@ -95,7 +105,7 @@ def scrape_betclic() -> pd.DataFrame():
                 event_time = event.find_element(By.CLASS_NAME, "scoreboard_hour").text
 
                 # merge to datetime
-                event_datetime = datetime.strptime(str(events_date) + " " + event_time, "%d.%m.%Y %H:%M").strftime("%d-%m-%Y %H:%M")
+                event_datetime = datetime.strptime(str(events_date) + " " + event_time, "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M")
                 
                 if bet_outcomes == 'two-way':
                     # if invalid data - skip 
@@ -104,15 +114,15 @@ def scrape_betclic() -> pd.DataFrame():
                         continue
 
                     # append item
-                    dct = {
-                        "game_datetime": event_datetime,
-                        "team_1": item[3],
-                        "team_2": item[5],
-                        "stake_1_wins": stakes[0].replace(",", "."),
-                        "stake_draw": np.inf,
-                        "stake_2_wins": stakes[1].replace(",", "."),
-                        "url": url,
-                        "category": category}
+                    dct = {"game_datetime": event_datetime,
+                           "team_1": item[3],
+                           "team_2": item[5],
+                           "stake_1_wins": stakes[0].replace(",", "."),
+                           "stake_draw": np.inf,
+                           "stake_2_wins": stakes[1].replace(",", "."),
+                           "url": url,
+                           "category": category
+                        }
                 
                 elif bet_outcomes == 'three-way':
                     # if invalid data - skip 
@@ -121,15 +131,15 @@ def scrape_betclic() -> pd.DataFrame():
                         continue
 
                     # append item
-                    dct = {
-                        "game_datetime": event_datetime,
-                        "team_1": item[3],
-                        "team_2": item[5],
-                        "stake_1_wins": stakes[0].replace(",", "."),
-                        "stake_draw": stakes[1].replace(",", "."),
-                        "stake_2_wins": stakes[2].replace(",", "."),
-                        "url": url,
-                        "category": category}
+                    dct = {"game_datetime": event_datetime, 
+                           "team_1": item[3],
+                           "team_2": item[5],
+                           "stake_1_wins": stakes[0].replace(",", "."),
+                           "stake_draw": stakes[1].replace(",", "."),
+                           "stake_2_wins": stakes[2].replace(",", "."),
+                           "url": url,
+                           "category": category
+                        }
                 df = df._append(pd.DataFrame([dct], columns=columns), ignore_index=True)
 
     # close chrome

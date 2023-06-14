@@ -43,19 +43,19 @@ def scrape_sts() -> pd.DataFrame():
         time.sleep(3)
 
         # get table elements of every polish football league (on the same page)
-        table_elements = driver.find_elements(By.XPATH, '/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div/div/table[*]')
+        elements = driver.find_elements(By.XPATH, '/html/body/div[5]/div[2]/div[6]/div[5]/div[2]/div/div/table[*]')
 
-        for table_element in table_elements:
-            scroll_into_view(driver, table_element, sleep=0)
+        for index, element in enumerate(elements):
+            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
 
             # set current section date (inherit previous date if doesnt exist)
-            event_date_element = table_element.find_elements(By.XPATH, './thead')
-            event_date = event_date_element[0].text[-10:] if len(event_date_element) else event_date
+            event_date_element = element.find_elements(By.XPATH, './thead')
+            event_date = event_date_element[0].text[-10:-5] if len(event_date_element) else event_date
 
             # get elements time class text
-            event_time = table_element.find_element(By.XPATH, ".//*[contains(@class, 'date_time')]").text
+            event_time = element.find_element(By.XPATH, ".//*[contains(@class, 'date_time')]").text
             
-            item = table_element.find_element(By.XPATH, "./tbody/tr/td[2]/table/tbody").text.split("\n")
+            item = element.find_element(By.XPATH, "./tbody/tr/td[2]/table/tbody").text.split("\n")
 
 
             if bet_outcomes == 'two-way':

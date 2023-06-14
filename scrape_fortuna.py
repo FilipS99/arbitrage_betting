@@ -11,6 +11,7 @@ from additional_functions import scroll_into_view
 def scrape_fortuna() -> pd.DataFrame():
     # links
     links = [
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/rugby', 'rugby', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/mma', 'ufc', 'two-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/fortuna-1-liga-polska', 'polish football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-polska', 'polish football', 'three-way'),
@@ -18,12 +19,16 @@ def scrape_fortuna() -> pd.DataFrame():
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-ii', 'polish football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iii', 'polish football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-polska-grupa-iv', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/polska-superpuchar', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/4-polska-grupa-lodzka', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/4-polska-grupa-malopolska', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/4-polska-grupa-podkarpacka', 'polish football', 'three-way'),
+                ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/4-polska-grupa-podlaska', 'polish football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-finlandia', 'finnish football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-finlandia', 'finnish football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-a', 'finnish football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-b', 'finnish football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/3-finlandia-c', 'finnish football', 'three-way'),
-                ('https://www.efortuna.pl/zaklady-bukmacherskie/rugby', 'rugby', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-brazylia', 'brazilian football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/1-brazylia-k-', 'brazilian football', 'three-way'),
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/pilka-nozna/2-brazylia', 'brazilian football', 'three-way'),
@@ -41,7 +46,7 @@ def scrape_fortuna() -> pd.DataFrame():
     options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(3)
+    # driver.implicitly_wait(1)
 
     for link in links:
         # unpack tuple
@@ -54,17 +59,13 @@ def scrape_fortuna() -> pd.DataFrame():
         time.sleep(1)   
 
         # get table elements (on the same page)
-        if bet_outcomes == 'three-way':
-            table_elements = driver.find_elements(By.XPATH, '/html/body/div[2]/div/div[2]/div[2]/div/div[3]/div[5]/section/div[2]/div/div/table/tbody/tr[*]')
-
-        elif bet_outcomes == 'two-way':
-            table_elements = driver.find_elements(By.XPATH, '/html/body/div[2]/div/div[2]/div[2]/div/div[*]/section[*]/div[2]/div/div/table/tbody/tr[*]')
+        elements = driver.find_elements(By.XPATH, '/html/body/div[2]/div/div[2]/div[2]/div/div[*]/section[*]/div[2]/div/div/table/tbody/tr[*]')
                                                          
 
-        for table_element in table_elements:
-            scroll_into_view(driver, table_element, sleep=0)
+        for index, element in enumerate(elements):
+            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
             
-            item = table_element.text.split("\n")
+            item = element.text.split("\n")
 
             # remove redundant elements
             patterns = ['BetBuilder']
@@ -72,7 +73,7 @@ def scrape_fortuna() -> pd.DataFrame():
             
             try:
                 if item[0] != '':
-                    teams = table_element.find_element(By.CLASS_NAME, 'market-name').text.split(' - ')
+                    teams = element.find_element(By.CLASS_NAME, 'market-name').text.split(' - ')
             except Exception as e:
                 teams = []                
 
@@ -84,7 +85,7 @@ def scrape_fortuna() -> pd.DataFrame():
                     continue
 
                 # append item
-                dct = {"game_datetime": item[-1][:6].replace('.','-') + datetime.now().strftime("%Y ") + item[-1][-5:],
+                dct = {"game_datetime": item[-1][:5].replace('.','-') + ' ' + item[-1][-5:],
                        "team_1": teams[0],
                        "team_2": teams[1],
                        "stake_1_wins": item[1],
@@ -101,7 +102,7 @@ def scrape_fortuna() -> pd.DataFrame():
                     continue
 
                 # append item
-                dct = {"game_datetime": item[-1][:6].replace('.','-') + datetime.now().strftime("%Y ") + item[-1][-5:],
+                dct = {"game_datetime": item[-1][:5].replace('.','-') + ' ' + item[-1][-5:],
                        "team_1": teams[0],
                        "team_2": teams[1],
                        "stake_1_wins": item[1],

@@ -48,13 +48,13 @@ def scrape_forbet() -> pd.DataFrame():
             scroll_into_view(driver, section, sleep=0)
 
             # set event date 
-            events_date = section.text.split('\n')[0].split(', ')[1].replace('.', '-') + '-' + str(date.today().year)
+            events_date = section.text.split('\n')[0].split(', ')[1].replace('.', '-')
 
             # get elements
             elements = section.find_elements(By.XPATH, './div[*]') 
                                                                     
-            for element in elements:
-                scroll_into_view(driver, element, sleep=0.1)
+            for index, element in enumerate(elements):
+                scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
                 
                 item = element.text.split('\n')
                 teams = item[1].split(' - ')

@@ -1,9 +1,5 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-import numpy as np
-import pandas as pd
 import time
+from datetime import datetime, timedelta
 
 def scroll_into_view(driver, element, sleep=0):
     # Get initial element position
@@ -26,3 +22,44 @@ def scroll_into_view(driver, element, sleep=0):
         
         # Update the last recorded position
         initial_position = new_position
+
+
+def get_closest_week_day(weekday):
+    days_of_week = ['PON.', 'WT.', 'ŚR.', 'CZW.', 'PT.', 'SOB.', 'NIEDZ.']
+
+    today = datetime.now().date()  # Get the current date
+
+    closest_days = {}
+    
+    if weekday in days_of_week:
+        target_day = days_of_week.index(weekday)
+        
+        if today.weekday() == target_day:
+            return today.strftime("%d.%m")
+        else:
+            days_ahead = (target_day - today.weekday()) % 7
+            return (today + timedelta(days=days_ahead)).strftime("%d.%m")
+        
+    elif weekday.upper() == 'Dzisiaj'.upper():
+        return datetime.now().strftime("%d.%m")
+    
+    elif weekday.upper() == 'Jutro'.upper():
+        return (datetime.now() + timedelta(days=1)).strftime("%d.%m")
+    
+    else: 
+        return weekday
+
+
+def format_date_with_zeros(date_string): 
+    parts = date_string.split("-")
+    day = parts[0].zfill(2)
+    month = parts[1]
+
+    return day + "-" + month
+
+
+# days_of_week1 = ['PON.', 'WT.', 'ŚR.', 'CZW.', 'PT.', 'SOB.', 'NIEDZ.', '01.10']
+# for day in days_of_week1:
+#     print(find_closest_week_day(day))
+
+# print(format_date_with_zeros('4-10'))

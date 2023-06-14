@@ -30,7 +30,7 @@ def scrape_lvbet() -> pd.DataFrame():
     options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(5)
+    driver.implicitly_wait(3)
            
     for link in links:
         # unpack tuple
@@ -43,14 +43,14 @@ def scrape_lvbet() -> pd.DataFrame():
         time.sleep(3)
 
         # get table elements of every polish football league (on the same page)
-        table_elements = driver.find_elements(
+        elements = driver.find_elements(
                         By.CLASS_NAME, 'odds-table__entry')
 
-        for table_element in table_elements:
-            scroll_into_view(driver, table_element, sleep=0)
+        for index, element in enumerate(elements):
+            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
 
             # split row into seperate items  
-            item = table_element.text.split("\n") 
+            item = element.text.split("\n") 
             
             # remove redundant elements
             patterns = ['betbuilder']
@@ -63,7 +63,7 @@ def scrape_lvbet() -> pd.DataFrame():
                     continue
 
                 # append item
-                dct = {"game_datetime": (item[1] + datetime.now().strftime("-%Y ") + item[0]).replace('.','-'),
+                dct = {"game_datetime": (item[1] + ' ' + item[0]).replace('.','-'),
                        "team_1": item[2],
                        "team_2": item[3],
                        "stake_1_wins": item[4],
@@ -81,7 +81,7 @@ def scrape_lvbet() -> pd.DataFrame():
                     continue
 
                 # append item
-                dct = {"game_datetime": (item[1] + datetime.now().strftime("-%Y ") + item[0]).replace('.','-'),
+                dct = {"game_datetime": (item[1] + ' ' + item[0]).replace('.','-'),
                        "team_1": item[2],
                        "team_2": item[3],
                        "stake_1_wins": item[4],

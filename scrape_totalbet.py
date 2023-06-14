@@ -1,27 +1,24 @@
-import traceback
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
 import numpy as np
 import pandas as pd
 import time
 
+from additional_functions import scroll_into_view, get_closest_week_day
 
 def scrape_totalbet() -> pd.DataFrame():
     # ligii polskie
     links = [
                 ('https://totalbet.pl/sports/events/MMA-i-Kickboxing/41852,41920,42019,42036,42091/41', 'ufc', 'two-way'),
-                ('https://totalbet.pl/sports/events/Pilka-nozna/7486,7489,12232,13951,13952,14272,39304,39305,39308,39309,39310,39311,39312,39313,39314,39315,39316,39317,39318,39319,39320,39321,41738,41739/1', 'polish football', 'three-way'),
+                ('https://totalbet.pl/sports/events/Pilka-nozna/7488,7486,7489,12232,13951,13952,14272,39304,39305,39308,39309,39310,39311,39312,39313,39314,39315,39316,39317,39318,39319,39320,39321,41738,41739/1', 'polish football', 'three-way'),
                 ('https://totalbet.pl/sports/events/Pilka-nozna/7269,7270,7272,7273,7274/1', 'finnish football', 'three-way'),
                 ('https://totalbet.pl/sports/events/Rugby/6631,6632,6634,6637,6650,6651,6652,30191/12', 'rugby', 'three-way'),
                 ('https://totalbet.pl/sports/events/Pilka-nozna/7331,7342,7344,7351,7353,29269/1', 'brazilian football', 'three-way')
             ]
     
     # initialize output DataFrame
-    columns = ["team_1",  "team_2", "stake_1_wins",
+    columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
     
@@ -31,7 +28,7 @@ def scrape_totalbet() -> pd.DataFrame():
     options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(5)
+    driver.implicitly_wait(3)
 
     for link in links:
         # unpack tuple
@@ -44,32 +41,18 @@ def scrape_totalbet() -> pd.DataFrame():
         time.sleep(3)
 
         # get table elements of every polish football league (on the same page)
-        table_elements = driver.find_elements(By.XPATH, '/html/body/div[*]/div[2]/div[3]/div/div/div[3]/partial[3]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li')
+        elements = driver.find_elements(By.XPATH, '/html/body/div[*]/div[2]/div[3]/div/div/div[3]/partial[3]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li')
                                                          
-        for table_element in table_elements:
-            # Get initial element position
-            initial_position = table_element.location["y"]
-            while True:
-                # Scroll to the element's bottom position
-                driver.execute_script("arguments[0].scrollIntoView(false);", table_element)
-                
-                # Wait for a short interval to allow content to load
-                # time.sleep(0.1)
-                
-                # Calculate the new element position after scrolling
-                new_position = table_element.location["y"]
-                
-                # Break the loop if the element's position remains the same (reached the bottom)
-                if new_position == initial_position:
-                    break
-                
-                # Update the last recorded position
-                initial_position = new_position
-
-            item = table_element.text.split("\n")
+        for index, element in enumerate(elements):
+            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
+            
+            item = element.text.split("\n")
             if item[0] == '':
                 continue
             teams = item[2].split(" - ")
+
+            # set game datetime
+            game_datetime = (get_closest_week_day(item[0]) + ' ' + item[1]).replace('.','-')
 
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
@@ -78,7 +61,8 @@ def scrape_totalbet() -> pd.DataFrame():
                     continue
 
                 # append item
-                dct = {"team_1": teams[0],
+                dct = {"game_datetime": game_datetime, 
+                    "team_1": teams[0],
                     "team_2": teams[1],
                     "stake_1_wins": item[3],
                     "stake_draw": np.inf,
@@ -93,7 +77,8 @@ def scrape_totalbet() -> pd.DataFrame():
                     continue
 
                 # append item
-                dct = {"team_1": teams[0],
+                dct = {"game_datetime": game_datetime, 
+                    "team_1": teams[0],
                     "team_2": teams[1],
                     "stake_1_wins": item[3],
                     "stake_draw": item[4],

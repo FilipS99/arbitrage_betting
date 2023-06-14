@@ -12,21 +12,22 @@ def calculate_bets_outcomes(df: pd.DataFrame, amount: float, output_path: str, f
     df_copy['stake_2_wins'] = df_copy['stake_2_wins'].astype(float)
 
     # DataFrame with stake_1_wins and URLs
-    df_stake_1_wins = df_copy[['team_1', 'team_2', 'stake_1_wins', 'url', 'category']]
+    df_stake_1_wins = df_copy[['game_datetime', 'team_1', 'team_2', 'stake_1_wins', 'url', 'category']]
 
     # DataFrame with stake_draw and URLs
-    df_stake_draw = df_copy[['team_1', 'team_2', 'stake_draw', 'url', 'category']]
+    df_stake_draw = df_copy[['game_datetime', 'team_1', 'team_2', 'stake_draw', 'url', 'category']]
 
     # DataFrame with stake_2_wins and URLs
-    df_stake_2_wins = df_copy[['team_1', 'team_2', 'stake_2_wins', 'url', 'category']]
+    df_stake_2_wins = df_copy[['game_datetime', 'team_1', 'team_2', 'stake_2_wins', 'url', 'category']]
 
     # Merge the dataframes on team names
     df_merged = pd.merge(df_stake_1_wins, df_stake_draw,
-                         on=['team_1', 'team_2', 'category'])
-    df_merged = pd.merge(df_merged, df_stake_2_wins, on=['team_1', 'team_2', 'category'])
+                         on=['game_datetime', 'team_1', 'team_2', 'category'])
+    df_merged = pd.merge(df_merged, df_stake_2_wins, on=['game_datetime', 'team_1', 'team_2', 'category'])
                   
     # Create a new dataframe with matching URLs, stake values for wins, draw, and 2 wins
     df_new = pd.DataFrame({
+        'game_datetime': df_merged['game_datetime'],
         'team_1': df_merged['team_1'],
         'team_2': df_merged['team_2'],
         'category': df_merged['category'],

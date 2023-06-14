@@ -101,7 +101,7 @@ if __name__ == "__main__":
     df = rename_synonyms(df)
 
     # sorting
-    df = df.sort_values(by=['category', 'team_1', 'team_2'], ascending=[True, True, True])
+    df = df.sort_values(by=['category', 'game_datetime', 'team_1', 'team_2'], ascending=[True, True, True, True])
  
     # generate all possible bets combinations
     calculate_bets_outcomes(df, bet_amount, output_path, filename_datetime)
