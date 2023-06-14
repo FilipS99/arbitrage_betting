@@ -5,11 +5,13 @@ import numpy as np
 import pandas as pd
 import time
 from datetime import datetime
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view, get_closest_week_day
 
 
-def scrape_etoto() -> pd.DataFrame():
+def scrape_etoto() -> Tuple[pd.DataFrame, list]:
     # links
     links = [
                 ('https://www.etoto.pl/zaklady-bukmacherskie/sporty-walki/ufc/ufc-289:-nunes-vs-aldana,ufc-fn:-vettori-vs-cannonier,ufc-fn:-emmett-vs-topuria,ufc-290:-volkanovski-vs-rodriguez,ufc-fn:-aspinall-vs-tybura,ufc-291:-poirier-vs-gaethje-2,ufc-292:-sterling-vs-o-malley/23444,23558,23453,23536,23537,23590,23591',
@@ -28,6 +30,7 @@ def scrape_etoto() -> pd.DataFrame():
     columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
+    errors = []
     
     # chrome driver setup
     options = Options()
@@ -49,6 +52,7 @@ def scrape_etoto() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("Etoto: URL Redirected to: " + driver.current_url)
             continue
 
         # scrape rows
@@ -59,14 +63,20 @@ def scrape_etoto() -> pd.DataFrame():
 
             item = element.text.split('\n')
 
+            # set game datetime
             if len(item) > 4:
-              # set game datetime
-              game_datetime = get_closest_week_day(item[2].replace('.', '-')) + ' ' + item[3]
+              game_datetime = get_closest_week_day(item[2].replace('.', '-')) + ' ' + item[3]   
+
+              # continue if gametime doesnt match regex
+              date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+              if not re.match(date_pattern, game_datetime):
+                errors.append("Etoto: Datetime error: " + game_datetime)
+                continue    
             
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
                 if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
-                    print("Etoto: Error appending - " + " | ".join(item))
+                    errors.append("Etoto: Error appending - " + " | ".join(item))
                     continue
                 
                 # append item
@@ -82,7 +92,7 @@ def scrape_etoto() -> pd.DataFrame():
             elif bet_outcomes == 'three-way':
                 # if invalid data - skip 
                 if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
-                    print("Etoto: Error appending - " + " | ".join(item))
+                    errors.append("Etoto: Error appending - " + " | ".join(item))
                     continue
                 
                 # append item
@@ -101,10 +111,8 @@ def scrape_etoto() -> pd.DataFrame():
 
     # close chrome
     driver.quit()
-
-    # print(f"{'Etoto:':<10} {len(df)}")
-
-    return df
+    
+    return df, errors
 
 
 # # # test

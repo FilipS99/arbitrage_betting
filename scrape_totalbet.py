@@ -4,10 +4,12 @@ from selenium.webdriver.common.by import By
 import numpy as np
 import pandas as pd
 import time
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view, get_closest_week_day
 
-def scrape_totalbet() -> pd.DataFrame():
+def scrape_totalbet() -> Tuple[pd.DataFrame, list]:
     # ligii polskie
     links = [
                 ('https://totalbet.pl/sports/events/MMA-i-Kickboxing/41852,41920,42019,42036,42091/41', 'ufc', 'two-way'),
@@ -17,10 +19,11 @@ def scrape_totalbet() -> pd.DataFrame():
                 ('https://totalbet.pl/sports/events/Pilka-nozna/7331,7342,7344,7351,7353,29269/1', 'brazilian football', 'three-way')
             ]
     
-    # initialize output DataFrame
+    # initialize outputs
     columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
+    errors = []
     
     #   chrome driver setup
     options = Options()
@@ -42,6 +45,7 @@ def scrape_totalbet() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("TotalBet: URL Redirected to: " + driver.current_url)
             continue
 
         # get table elements of every polish football league (on the same page)
@@ -54,14 +58,21 @@ def scrape_totalbet() -> pd.DataFrame():
             if item[0] == '':
                 continue
             teams = item[2].split(" - ")
-
+            
             # set game datetime
-            game_datetime = (get_closest_week_day(item[0]) + ' ' + item[1]).replace('.','-')
+            if len(item) > 2:
+                game_datetime = (get_closest_week_day(item[0]) + ' ' + item[1]).replace('.','-')
+
+                # continue if gametime doesnt match regex
+                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                if not re.match(date_pattern, game_datetime):
+                    errors.append("TotalBet: Datetime error: " + game_datetime)
+                    continue
 
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
                 if len(item) < 5 or len(teams) != 2 or not item[3].replace(".", "").isnumeric() or not item[4].replace(".", "").isnumeric():
-                    print("TotalBet: Error appending - " + " | ".join(item))
+                    errors.append("TotalBet: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
@@ -77,7 +88,7 @@ def scrape_totalbet() -> pd.DataFrame():
             elif bet_outcomes == 'three-way': 
                 # if invalid data - skip 
                 if len(item) < 5 or len(teams) != 2 or not item[3].replace(".", "").isnumeric() or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
-                    print("TotalBet: Error appending - " + " | ".join(item))
+                    errors.append("TotalBet: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
@@ -95,7 +106,8 @@ def scrape_totalbet() -> pd.DataFrame():
 
     # close chrome
     driver.quit()
-    return df
+
+    return df, errors
 
 
 # # test

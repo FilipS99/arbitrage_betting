@@ -5,11 +5,13 @@ import numpy as np
 import pandas as pd
 import time
 from datetime import datetime, timedelta
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view
 
 
-def scrape_betfan() -> pd.DataFrame():
+def scrape_betfan() -> Tuple[pd.DataFrame, list]:
     # links
     links = [
                 ('https://betfan.pl/lista-zakladow/pilka-nozna/polska/245', 'polish football', 'three-way'),
@@ -33,6 +35,7 @@ def scrape_betfan() -> pd.DataFrame():
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(3)
+    errors = []
 
     for link in links:
         # unpack tuple
@@ -46,6 +49,7 @@ def scrape_betfan() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("BetFan: URL Redirected to: " + driver.current_url)
             continue
 
         # scrape rows
@@ -65,18 +69,28 @@ def scrape_betfan() -> pd.DataFrame():
 
                 # Replace "today" and "tomorrow" with their respective dates
                 item[1] = item[1].replace('Jutro', tomorrow_date).replace('Dziś', current_date)
+
+            # set game datetime
+            if len(item) > 1:
+                game_datetime = datetime.strptime(item[1], "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M")  
+
+                # continue if gametime doesnt match regex
+                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                if not re.match(date_pattern, game_datetime):
+                    errors.append("BetFan: Datetime error: " + game_datetime)
+                    continue    
             
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
                 if len(item) < 8 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
                     if item[0] == '':
                         continue
-                    print("BetFan: Error appending - " + " | ".join(item))
+                    errors.append("BetFan: Error appending - " + " | ".join(item))
                     continue
                 
                 # append item
                 dct = {
-                    "game_datetime": datetime.strptime(item[1], "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M"),
+                    "game_datetime": game_datetime,
                     "team_1": item[2],
                     "team_2": item[3],
                     "stake_1_wins": item[5],
@@ -90,12 +104,12 @@ def scrape_betfan() -> pd.DataFrame():
                 if len(item) < 9 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
                     if item[0] == '':
                         continue
-                    print("BetFan: Error appending - " + " | ".join(item))
+                    errors.append("BetFan: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
                 dct = {
-                    "game_datetime": datetime.strptime(item[1], "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M"),
+                    "game_datetime": game_datetime,
                     "team_1": item[2],
                     "team_2": item[3],
                     "stake_1_wins": item[5],
@@ -110,8 +124,8 @@ def scrape_betfan() -> pd.DataFrame():
 
     # close chrome
     driver.quit()
-
-    return df
+    
+    return df, errors
 
 
 # # # test

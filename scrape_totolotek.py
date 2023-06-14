@@ -5,10 +5,11 @@ import numpy as np
 import pandas as pd
 import time
 import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view
 
-def scrape_totolotek() -> pd.DataFrame():    
+def scrape_totolotek() -> Tuple[pd.DataFrame, list]:    
     # totolotek 1 liga
     links = [
                 ('https://www.totolotek.pl/pl/mma', 'ufc', 'two-way'),
@@ -22,6 +23,7 @@ def scrape_totolotek() -> pd.DataFrame():
     columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
+    errors = []
 
     # chrome driver setup
     options = Options()
@@ -43,6 +45,7 @@ def scrape_totolotek() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("Totolotek: URL Redirected to: " + driver.current_url)
             continue
 
         # find elements until each is loaded
@@ -69,16 +72,16 @@ def scrape_totolotek() -> pd.DataFrame():
                 # set game datetime
                 game_datetime = (item[2][-5:] + ' ' + item[3]).replace('.','-')
 
-            # continue if gametime doesnt match regex
-            date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
-            if not re.match(date_pattern, game_datetime):
-                print("Totolotek: Datetime error: " + game_datetime)
-                continue
+                # continue if gametime doesnt match regex
+                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                if not re.match(date_pattern, game_datetime):
+                    errors.append("Totolotek: Datetime error: " + game_datetime)
+                    continue
             
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
                 if len(item) < 8 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
-                    print("Totolotek: Error appending - " + " | ".join(item))
+                    errors.append("Totolotek: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
@@ -94,7 +97,7 @@ def scrape_totolotek() -> pd.DataFrame():
             elif bet_outcomes == 'three-way': 
                 # if invalid data - skip 
                 if len(item) < 10 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
-                    print("Totolotek: Error appending - " + " | ".join(item))
+                    errors.append("Totolotek: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
@@ -115,7 +118,7 @@ def scrape_totolotek() -> pd.DataFrame():
 
     # print(f"{'Totolotek:':<10} {len(df)}")
 
-    return df
+    return df, errors
 
 
 # test

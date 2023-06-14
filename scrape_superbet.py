@@ -4,10 +4,12 @@ from selenium.webdriver.common.by import By
 import numpy as np
 import pandas as pd
 import time
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view, get_closest_week_day, format_date_with_zeros
 
-def scrape_superbet() -> pd.DataFrame():
+def scrape_superbet() -> Tuple[pd.DataFrame, list]:
     # SUPERBET
     links = [
                 ('https://superbet.pl/zaklady-bukmacherskie/sporty-walki/ufc', 'ufc', 'two-way'),
@@ -21,6 +23,7 @@ def scrape_superbet() -> pd.DataFrame():
     columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
+    errors = []
 
     # chrome driver setup
     options = Options()
@@ -42,6 +45,7 @@ def scrape_superbet() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("SuperBet: URL Redirected to: " + driver.current_url)
             continue
         
         # get table elements of every polish football league (on the same page)
@@ -50,19 +54,34 @@ def scrape_superbet() -> pd.DataFrame():
         
         
         for index, element in enumerate(elements):
-            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0.1)
+            max_attempts = 3
+            attempts = 0
+            while attempts < max_attempts:
+                try:
+                    # Perform the operation that may raise an exception
+                    scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
+                    break  # Exit the loop if the operation succeeds
+                except Exception as e:
+                    attempts += 1
 
             # split row into seperate items  
             item = element.text.split("\n")
             # ['SOB.', '17:30', 'Niepołomice', 'Głogów', '2448', '1.47', '1.47', '4.50', '4.50', '6.50', '6.50', '+129']
+  
+            # set game datetime
+            if len(item) > 2:            
+                game_datetime = format_date_with_zeros((get_closest_week_day(item[0]) + ' ' + item[1]).replace('.','-'))
 
-            # get game datetime
-            game_datetime = format_date_with_zeros((get_closest_week_day(item[0]) + ' ' + item[1]).replace('.','-'))
+                # continue if gametime doesnt match regex
+                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                if not re.match(date_pattern, game_datetime):
+                    errors.append("TotalBet: Datetime error: " + game_datetime)
+                    continue
             
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
                 if len(item) < 8 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
-                    print("SuperBet: Error appending - " + " | ".join(item))
+                    errors.append("SuperBet: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
@@ -78,7 +97,7 @@ def scrape_superbet() -> pd.DataFrame():
             elif bet_outcomes == 'three-way': 
                 # if invalid data - skip 
                 if len(item) < 12 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
-                    print("SuperBet: Error appending - " + " | ".join(item))
+                    errors.append("SuperBet: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
@@ -97,9 +116,7 @@ def scrape_superbet() -> pd.DataFrame():
     # close chrome
     driver.quit()
 
-    # print(f"{'Superbet:':<10} {len(df)}")
-
-    return df
+    return df, errors
 
 
 # # # test

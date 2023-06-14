@@ -4,11 +4,13 @@ from selenium.webdriver.common.by import By
 import numpy as np
 import pandas as pd
 import time
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view
 
 
-def scrape_sts() -> pd.DataFrame():
+def scrape_sts() -> Tuple[pd.DataFrame, list]:
     links = [
                 ('https://www.sts.pl/pl/zaklady-bukmacherskie/sporty-walki/mma/ufc/211/6594/84954/', 'ufc', 'two-way'),
                 ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/polska/184/30860/', 'polish football', 'three-way'),
@@ -22,6 +24,7 @@ def scrape_sts() -> pd.DataFrame():
     columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
+    errors = []
     
     # Chrome instance in nested, since STS blocks quick page changes with Captcha
     for link in links:
@@ -44,6 +47,7 @@ def scrape_sts() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("STS: URL Redirected to: " + driver.current_url)
             continue
 
         # get table elements of every polish football league (on the same page)
@@ -61,16 +65,25 @@ def scrape_sts() -> pd.DataFrame():
             
             item = element.find_element(By.XPATH, "./tbody/tr/td[2]/table/tbody").text.split("\n")
 
+            # set game datetime
+            game_datetime = (event_date + ' ' + event_time).replace('.','-')
+
+            # continue if gametime doesnt match regex
+            date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+            if not re.match(date_pattern, game_datetime):
+                errors.append("STS: Datetime error: " + game_datetime)
+                continue
+
 
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
                 if len(item) < 4 or not item[1].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
                     if item[0] != '':
-                        print("STS: Error appending - " + " | ".join(item))
+                        errors.append("STS: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
-                dct = {"game_datetime": (event_date + ' ' + event_time).replace('.','-'), 
+                dct = {"game_datetime": game_datetime, 
                        "team_1": item[0],
                        "team_2": item[2],
                        "stake_1_wins": item[1],
@@ -84,11 +97,11 @@ def scrape_sts() -> pd.DataFrame():
                 # if invalid data - skip 
                 if len(item) < 6 or not item[1].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
                     if item[0] != '':
-                        print("STS: Error appending - " + " | ".join(item))
+                        errors.append("STS: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
-                dct = {"game_datetime": (event_date + ' ' + event_time).replace('.','-'),
+                dct = {"game_datetime": game_datetime,
                        "team_1": item[0],
                        "team_2": item[4],
                        "stake_1_wins": item[1],
@@ -104,9 +117,7 @@ def scrape_sts() -> pd.DataFrame():
         # close chrome
         driver.quit()
 
-    # print(f"{'STS:':<10} {len(df)}")
-
-    return df
+    return df, errors
 
 
 # # test

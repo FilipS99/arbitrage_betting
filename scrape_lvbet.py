@@ -5,11 +5,13 @@ import numpy as np
 import pandas as pd
 import time
 from datetime import datetime
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view
 
 
-def scrape_lvbet() -> pd.DataFrame():
+def scrape_lvbet() -> Tuple[pd.DataFrame, list]:
     # lvbet polska piłka nożna
     links = [
                 ('https://lvbet.pl/pl/zaklady-bukmacherskie/multiple--?leagues=20773', 'ufc', 'two-way'),
@@ -23,6 +25,7 @@ def scrape_lvbet() -> pd.DataFrame():
     columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
+    errors = []
     
     # chrome driver setup
     options = Options()
@@ -44,6 +47,7 @@ def scrape_lvbet() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("LvBet: URL Redirected to: " + driver.current_url)
             continue
 
         # get table elements of every polish football league (on the same page)
@@ -60,14 +64,24 @@ def scrape_lvbet() -> pd.DataFrame():
             patterns = ['betbuilder']
             item = [x for x in item if all(pattern not in x for pattern in patterns)]
 
+            # set game datetime
+            if len(item) > 2:   
+                game_datetime = (item[1] + ' ' + item[0]).replace('.','-')
+
+                # continue if gametime doesnt match regex
+                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                if not re.match(date_pattern, game_datetime):
+                    errors.append("LvBet: Datetime error: " + game_datetime)
+                    continue
+
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
                 if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
-                    print("LvBet: Error appending - " + " | ".join(item))
+                    errors.append("LvBet: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
-                dct = {"game_datetime": (item[1] + ' ' + item[0]).replace('.','-'),
+                dct = {"game_datetime": game_datetime,
                        "team_1": item[2],
                        "team_2": item[3],
                        "stake_1_wins": item[4],
@@ -81,11 +95,11 @@ def scrape_lvbet() -> pd.DataFrame():
             elif bet_outcomes == 'three-way': 
                 # if invalid data - skip 
                 if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
-                    print("LvBet: Error appending - " + " | ".join(item))
+                    errors.append("LvBet: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
-                dct = {"game_datetime": (item[1] + ' ' + item[0]).replace('.','-'),
+                dct = {"game_datetime": game_datetime,
                        "team_1": item[2],
                        "team_2": item[3],
                        "stake_1_wins": item[4],
@@ -101,7 +115,7 @@ def scrape_lvbet() -> pd.DataFrame():
     # close chrome
     driver.quit()
 
-    return df
+    return df, errors
 
 
 # # # test

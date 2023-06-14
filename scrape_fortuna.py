@@ -4,11 +4,13 @@ from selenium.webdriver.common.by import By
 import numpy as np
 import pandas as pd
 import time
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view
 
 
-def scrape_fortuna() -> pd.DataFrame():
+def scrape_fortuna() -> Tuple[pd.DataFrame, list]:
     # links
     links = [
                 ('https://www.efortuna.pl/zaklady-bukmacherskie/rugby', 'rugby', 'three-way'),
@@ -39,6 +41,7 @@ def scrape_fortuna() -> pd.DataFrame():
     columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
+    errors = []
     
     # chrome driver setup
     options = Options()
@@ -60,6 +63,7 @@ def scrape_fortuna() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("Fortuna: URL Redirected to: " + driver.current_url)
             continue
 
         # get table elements (on the same page)
@@ -79,17 +83,27 @@ def scrape_fortuna() -> pd.DataFrame():
                 if item[0] != '':
                     teams = element.find_element(By.CLASS_NAME, 'market-name').text.split(' - ')
             except Exception as e:
-                teams = []                
+                teams = []            
+
+            # set game datetime
+            if len(item[-1]) > 5:   
+                game_datetime = item[-1][:5].replace('.','-') + ' ' + item[-1][-5:]
+
+                # continue if gametime doesnt match regex
+                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                if not re.match(date_pattern, game_datetime):
+                    errors.append("Fortuna: Datetime error: " + game_datetime)
+                    continue    
 
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
                 if len(item) < 4 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric():
                     if item[0] != '':
-                        print("Fortuna: Error appending - " + " | ".join(item))
+                        errors.append("Fortuna: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
-                dct = {"game_datetime": item[-1][:5].replace('.','-') + ' ' + item[-1][-5:],
+                dct = {"game_datetime": game_datetime,
                        "team_1": teams[0],
                        "team_2": teams[1],
                        "stake_1_wins": item[1],
@@ -102,11 +116,11 @@ def scrape_fortuna() -> pd.DataFrame():
                 # if invalid data - skip 
                 if len(item) < 5 or len(teams) != 2 or not item[1].replace(".", "").isnumeric() or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
                     if item[0] != '':
-                        print("Fortuna: Error appending - " + " | ".join(item))
+                        errors.append("Fortuna: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
-                dct = {"game_datetime": item[-1][:5].replace('.','-') + ' ' + item[-1][-5:],
+                dct = {"game_datetime": game_datetime,
                        "team_1": teams[0],
                        "team_2": teams[1],
                        "stake_1_wins": item[1],
@@ -121,8 +135,8 @@ def scrape_fortuna() -> pd.DataFrame():
 
     # close chrome
     driver.quit()
-
-    return df
+    
+    return df, errors
 
 
 # # test

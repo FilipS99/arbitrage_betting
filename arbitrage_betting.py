@@ -1,15 +1,8 @@
-import traceback
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
-import numpy as np
 import pandas as pd
 import time
 from datetime import datetime
 import threading
+from typing import Tuple
 
 from scrape_sts import scrape_sts
 from scrape_superbet import scrape_superbet
@@ -84,15 +77,22 @@ if __name__ == "__main__":
 
     # Iterate over the threads, print and append the results
     for thread in threads:
-        result = globals()[thread].result
-        if not isinstance(result, pd.DataFrame):
+        thread_result = globals()[thread].result
+        if not isinstance(thread_result, Tuple):
             print(f"\n{thread.capitalize()}: CRITICAL ERROR\n")
         else:
+            # unpack output tuple
+            thread_df, thread_errors = thread_result
+
             # append category_size_per_page
-            category_size_per_page[thread] = result.groupby(['category']).size()
+            category_size_per_page[thread] = thread_df.groupby(['category']).size()
 
             # append main data DataFrame
-            df = pd.concat([df, result])
+            df = pd.concat([df, thread_df])
+
+            # print thread errors
+            for error in thread_errors:
+                print(error)
 
     # print category_size_per_page
     print(category_size_per_page)

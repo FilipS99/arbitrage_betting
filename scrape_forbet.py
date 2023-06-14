@@ -5,10 +5,12 @@ import numpy as np
 import pandas as pd
 import time
 from datetime import date
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view
 
-def scrape_forbet() -> pd.DataFrame():
+def scrape_forbet() -> Tuple[pd.DataFrame, list]:
     # links
     links = [
                 ('https://www.iforbet.pl/zaklady-bukmacherskie/30290', 'ufc', 'two-way'),
@@ -22,6 +24,7 @@ def scrape_forbet() -> pd.DataFrame():
     columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
+    errors = []
 
     # chrome driver setup
     options = Options()
@@ -43,6 +46,7 @@ def scrape_forbet() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("ForBet: URL Redirected to: " + driver.current_url)
             continue
         
         # scrape sections 
@@ -65,16 +69,26 @@ def scrape_forbet() -> pd.DataFrame():
 
                 # remove random value
                 while 'BETARCHITEKT' in item:
-                    item.remove('BETARCHITEKT')
+                    item.remove('BETARCHITEKT')       
+
+                # set game datetime
+                if len(item) > 0:   
+                    game_datetime = events_date + ' ' + item[0]
+
+                    # continue if gametime doesnt match regex
+                    date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                    if not re.match(date_pattern, game_datetime):
+                        errors.append("ForBet: Datetime error: " + game_datetime)
+                        continue    
                 
                 if bet_outcomes == 'two-way':
                     # if invalid data - skip 
                     if len(item) < 5 or len(teams) != 2 or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric():
-                        print("ForBet: Error appending - " + " | ".join(item))
+                        errors.append("ForBet: Error appending - " + " | ".join(item))
                         continue
 
                     # append item
-                    dct = {"game_datetime": events_date + ' ' + item[0],
+                    dct = {"game_datetime": game_datetime,
                            "team_1": teams[0],
                            "team_2": teams[1],
                            "stake_1_wins": item[2],
@@ -87,11 +101,11 @@ def scrape_forbet() -> pd.DataFrame():
                 elif bet_outcomes == 'three-way':
                     # if invalid data - skip 
                     if len(item) < 6 or len(teams) != 2 or not item[2].replace(".", "").isnumeric() or not item[3].replace(".", "").isnumeric() or not item[4].replace(".", "").isnumeric():
-                        print("ForBet: Error appending - " + " | ".join(item))
+                        errors.append("ForBet: Error appending - " + " | ".join(item))
                         continue
 
                     # append item
-                    dct = {"game_datetime": events_date + ' ' + item[0],
+                    dct = {"game_datetime": game_datetime,
                            "team_1": teams[0],
                            "team_2": teams[1],
                            "stake_1_wins": item[2],
@@ -106,10 +120,8 @@ def scrape_forbet() -> pd.DataFrame():
 
     # close chrome
     driver.quit()
-
-    # print(f"{'ForBet:':<10} {len(df)}")
-
-    return df
+    
+    return df, errors
 
 
 # # # test

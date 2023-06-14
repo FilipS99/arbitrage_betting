@@ -5,11 +5,13 @@ import numpy as np
 import pandas as pd
 import time
 from datetime import datetime, date, timedelta
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view
 
 
-def scrape_betclic() -> pd.DataFrame():
+def scrape_betclic() -> Tuple[pd.DataFrame, list]:
     # links (url, category, 2/3 way bet)
     links = [
                 ('https://www.betclic.pl/rugby-xiii-s52', 'rugby', 'three-way'),
@@ -52,6 +54,7 @@ def scrape_betclic() -> pd.DataFrame():
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(3)
+    errors = []
 
     for link in links:
         # unpack tuple
@@ -65,6 +68,7 @@ def scrape_betclic() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("BetClic: URL Redirected to: " + driver.current_url)
             continue
 
         # get table elements of every polish football league (on the same page)
@@ -108,17 +112,23 @@ def scrape_betclic() -> pd.DataFrame():
                 # get events time
                 event_time = event.find_element(By.CLASS_NAME, "scoreboard_hour").text
 
-                # merge to datetime
-                event_datetime = datetime.strptime(str(events_date) + " " + event_time, "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M")
+                # set game datetime
+                game_datetime = datetime.strptime(str(events_date) + " " + event_time, "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M")
+
+                # continue if gametime doesnt match regex
+                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                if not re.match(date_pattern, game_datetime):
+                    errors.append("BetClic: Datetime error: " + game_datetime)
+                    continue    
                 
                 if bet_outcomes == 'two-way':
                     # if invalid data - skip 
                     if len(item) < 8 or len(stakes) != 2:
-                        print("BetClic: Error appending - " + " | ".join(item))
+                        errors.append("BetClic: Error appending - " + " | ".join(item))
                         continue
 
                     # append item
-                    dct = {"game_datetime": event_datetime,
+                    dct = {"game_datetime": game_datetime,
                            "team_1": item[3],
                            "team_2": item[5],
                            "stake_1_wins": stakes[0].replace(",", "."),
@@ -131,11 +141,11 @@ def scrape_betclic() -> pd.DataFrame():
                 elif bet_outcomes == 'three-way':
                     # if invalid data - skip 
                     if len(item) < 11 or len(stakes) != 3:
-                        print("BetClic: Error appending - " + " | ".join(item))
+                        errors.append("BetClic: Error appending - " + " | ".join(item))
                         continue
 
                     # append item
-                    dct = {"game_datetime": event_datetime, 
+                    dct = {"game_datetime": game_datetime, 
                            "team_1": item[3],
                            "team_2": item[5],
                            "stake_1_wins": stakes[0].replace(",", "."),
@@ -148,7 +158,8 @@ def scrape_betclic() -> pd.DataFrame():
 
     # close chrome
     driver.quit()
-    return df
+    
+    return df, errors
 
 
 # # test

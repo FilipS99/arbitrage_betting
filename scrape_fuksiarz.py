@@ -5,11 +5,13 @@ import numpy as np
 import pandas as pd
 import time
 from datetime import datetime
+import re
+from typing import Tuple
 
 from additional_functions import scroll_into_view
 
 
-def scrape_fuksiarz() -> pd.DataFrame():
+def scrape_fuksiarz() -> Tuple[pd.DataFrame, list]:
     # links
     links = [
                 ('https://fuksiarz.pl/zaklady-bukmacherskie/mma/ufc/ufc/6657/41', 'ufc', 'two-way'),
@@ -31,6 +33,7 @@ def scrape_fuksiarz() -> pd.DataFrame():
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(3)
+    errors = []
            
     for link in links:
         # unpack tuple
@@ -44,6 +47,7 @@ def scrape_fuksiarz() -> pd.DataFrame():
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
+            errors.append("Fuksiarz: URL Redirected to: " + driver.current_url)
             continue
 
         elements = driver.find_elements(By.XPATH, f'/html/body/div[3]/div[2]/div[1]/div[2]/div[3]/div/div/div[3]/partial[*]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul/li') 
@@ -53,15 +57,25 @@ def scrape_fuksiarz() -> pd.DataFrame():
                 
             item = element.text.split('\n')
             teams = item[2].split(' - ')
+
+            # set game datetime
+            if len(item) > 2:   
+                game_datetime = (item[1] + ' ' + item[0]).replace('.','-')
+
+                # continue if gametime doesnt match regex
+                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                if not re.match(date_pattern, game_datetime):
+                    errors.append("Fuksiarz: Datetime error: " + game_datetime)
+                    continue
             
             if bet_outcomes == 'two-way':
                 # if invalid data - skip 
                 if len(item) < 6 or len(teams) != 2 or not item[3].replace(".", "").isnumeric() or not item[4].replace(".", "").isnumeric():
-                    print("Fuksiarz: Error appending - " + " | ".join(item))
+                    errors.append("Fuksiarz: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
-                dct = {"game_datetime": (item[1] + ' ' + item[0]).replace('.','-'),
+                dct = {"game_datetime": game_datetime,
                        "team_1": teams[0],
                        "team_2": teams[1],
                        "stake_1_wins": item[3],
@@ -74,11 +88,11 @@ def scrape_fuksiarz() -> pd.DataFrame():
             elif bet_outcomes == 'three-way': 
                 # if invalid data - skip 
                 if len(item) < 6 or len(teams) != 2 or not item[3].replace(".", "").isnumeric() or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
-                    print("Fuksiarz: Error appending - " + " | ".join(item))
+                    errors.append("Fuksiarz: Error appending - " + " | ".join(item))
                     continue
 
                 # append item
-                dct = {"game_datetime": (item[1] + ' ' + item[0]).replace('.','-'),
+                dct = {"game_datetime": game_datetime,
                        "team_1": teams[0],
                        "team_2": teams[1],
                        "stake_1_wins": item[3],
@@ -93,10 +107,8 @@ def scrape_fuksiarz() -> pd.DataFrame():
 
     # close chrome
     driver.quit()
-
-    # print(f"{'Fuksiarz:':<10} {len(df)}")
-
-    return df
+    
+    return df, errors
 
 
 # # # test
