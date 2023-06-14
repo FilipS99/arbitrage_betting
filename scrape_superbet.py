@@ -46,7 +46,7 @@ def scrape_superbet() -> pd.DataFrame():
         
         
         for index, element in enumerate(elements):
-            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
+            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0.1)
 
             # split row into seperate items  
             item = element.text.split("\n")

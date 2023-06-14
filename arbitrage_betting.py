@@ -71,7 +71,7 @@ if __name__ == "__main__":
     # start threads with delay
     for thread in threads:
         globals()[thread].start()
-        time.sleep(3)
+        time.sleep(4)
 
     # join threads 
     for thread in threads:
