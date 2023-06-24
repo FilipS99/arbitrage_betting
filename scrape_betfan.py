@@ -20,7 +20,13 @@ def scrape_betfan() -> Tuple[pd.DataFrame, list]:
                 ('https://betfan.pl/lista-zakladow/rugby/rugby-union/674', 'rugby', 'three-way'),
                 ('https://betfan.pl/lista-zakladow/pilka-nozna/brazylia/240', 'brazilian football', 'three-way'),
                 ('https://betfan.pl/lista-zakladow/mma/ufc/1489', 'ufc', 'two-way'),
-                ('https://betfan.pl/lista-zakladow/mma/ufc/1489', 'ufc', 'two-way')
+                ('https://betfan.pl/lista-zakladow/tenis/atp/396', 'tennis', 'two-way'),
+                ('https://betfan.pl/lista-zakladow/tenis/challenger/210', 'tennis', 'two-way'),
+                ('https://betfan.pl/lista-zakladow/tenis/itf-kobiety/375', 'tennis', 'two-way'),
+                ('https://betfan.pl/lista-zakladow/tenis/wta-125k/1238', 'tennis', 'two-way'),
+                ('https://betfan.pl/lista-zakladow/tenis/wta/399', 'tennis', 'two-way'),
+                ('https://betfan.pl/lista-zakladow/tenis/puchar-davisa/1824', 'tennis', 'two-way'),
+                ('https://betfan.pl/lista-zakladow/tenis/itf-mezczyzni/207', 'tennis', 'two-way')   
             ]
 
     # initialize output DataFrame

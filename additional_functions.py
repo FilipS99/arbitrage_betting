@@ -1,5 +1,6 @@
 import time
 from datetime import datetime, timedelta
+from selenium.webdriver.common.by import By
 
 def scroll_into_view(driver, element, sleep=0):
     # Get initial element position
@@ -56,6 +57,29 @@ def format_date_with_zeros(date_string):
     month = parts[1]
 
     return day + "-" + month
+
+
+def find_elements_without_stale(source, xpath, max_retries=5, retry_count=0):
+    success = True
+    # get discipline elements
+    elements = source.find_elements(By.XPATH, xpath) 
+    while retry_count < max_retries:
+        try:
+            for element in elements:
+                element.get_attribute('class')
+            break
+        except Exception:
+            time.sleep(1)
+            # Increment the retry count
+            retry_count += 1
+            if retry_count < max_retries:
+                # get discipline elements
+                elements = source.find_elements(By.XPATH, xpath) 
+            else:
+                success = True
+                break
+
+    return elements, success
 
 
 # days_of_week1 = ['PON.', 'WT.', 'ŚR.', 'CZW.', 'PT.', 'SOB.', 'NIEDZ.', '01.10']

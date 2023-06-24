@@ -39,7 +39,9 @@ def scrape_betclic() -> Tuple[pd.DataFrame, list]:
                 ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-3-c22107', 'polish football', 'three-way'),
                 ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-4-c21798', 'polish football', 'three-way'),
                 ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-kujawsko-pomorska-c25994', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-swietokrzyska-c26007', 'polish football', 'three-way')
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-swietokrzyska-c26007', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/pilka-nozna-s1/polska-superpuchar-c204', 'polish football', 'three-way'),
+                ('https://www.betclic.pl/tenis-s2', 'tennis', 'two-way')
             ]
     
     # initialize output DataFrame
