@@ -37,7 +37,7 @@ def scrape_etoto() -> Tuple[pd.DataFrame, list]:
     time.sleep(3)
 
     # Get the current URL, skip if redirectred
-    # if url != driver.current_aurl:
+    # if url != driver.current_url:
     #     errors.append("Etoto: URL Redirected to: " + driver.current_url)
     #     return
 
@@ -163,7 +163,7 @@ def scrape_etoto() -> Tuple[pd.DataFrame, list]:
                             "stake_1_wins": item[4],
                             "stake_draw": np.inf,
                             "stake_2_wins": item[5],
-                            "url": url,
+                            "url": driver.current_url,
                             "category": category}
                         
                     elif bet_outcomes == 'three-way':
@@ -179,7 +179,7 @@ def scrape_etoto() -> Tuple[pd.DataFrame, list]:
                             "stake_1_wins": item[4],
                             "stake_draw": item[5],
                             "stake_2_wins": item[6],
-                            "url": url,
+                            "url": driver.current_url,
                             "category": category}
                         
 
