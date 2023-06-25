@@ -17,7 +17,8 @@ def scrape_sts() -> Tuple[pd.DataFrame, list]:
                 ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/finlandia/184/30891/', 'finnish football', 'three-way'),
                 ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-league/195/31059/', 'rugby', 'three-way'),
                 ('https://www.sts.pl/pl/zaklady-bukmacherskie/rugby/rugby-union/195/31057/', 'rugby', 'three-way'),
-                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/brazylia/184/30863/', 'brazilian football', 'three-way')
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/pilka-nozna/brazylia/184/30863/', 'brazilian football', 'three-way'),
+                ('https://www.sts.pl/pl/zaklady-bukmacherskie/tenis/185/', 'tennis', 'two-way')
             ]
     
     # initialize output DataFrame

@@ -5,172 +5,289 @@ import numpy as np
 import pandas as pd
 import time
 from datetime import datetime, date, timedelta
+from selenium.webdriver.common.action_chains import ActionChains
 import re
 from typing import Tuple
 
-from additional_functions import scroll_into_view
+from additional_functions import scroll_into_view, get_closest_week_day, find_elements_without_stale, scroll_to_end_of_page
 
 
 def scrape_betclic() -> Tuple[pd.DataFrame, list]:
-    # links (url, category, 2/3 way bet)
-    links = [
+    # static links
+    static_links = [
+                ('https://www.betclic.pl/tenis-s2', 'tennis', 'two-way'),
                 ('https://www.betclic.pl/rugby-xiii-s52', 'rugby', 'three-way'),
                 ('https://www.betclic.pl/rugby-xv-s5', 'rugby', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-1-liga-c146', 'finnish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kolmonen-c21892', 'finnish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-2-liga-c494', 'finnish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-a-c7467', 'finnish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-b-c7468', 'finnish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/finlandia-kakkonen-c-c7469', 'finnish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-campeonato-k-c21767', 'brazilian football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-a-c187', 'brazilian football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-c-c19658', 'brazilian football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazilia-carioca-3-c26087', 'brazilian football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazilia-carioca-b2-u20-c24650', 'brazilian football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-b-c3454', 'brazilian football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/brazylia-serie-d-c22011', 'brazilian football', 'three-way'),
-                ('https://www.betclic.pl/sztuki-walki-s23/ufc-c15946', 'ufc', 'two-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-1-liga-c1749', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-2-liga-c2836', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-2-c22093', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-1-c22012', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-podkarpacka-c25999', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-zachodniopomorska-c26010', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-3-c22107', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-3-liga-gr-4-c21798', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-kujawsko-pomorska-c25994', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-4-liga-swietokrzyska-c26007', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/pilka-nozna-s1/polska-superpuchar-c204', 'polish football', 'three-way'),
-                ('https://www.betclic.pl/tenis-s2', 'tennis', 'two-way')
-            ]
-    
+                ('https://www.betclic.pl/sztuki-walki-s23/ufc-c15946', 'ufc', 'two-way')
+    ]
+
+    # dynamic subclasses
+    dynamic_links = [
+                ('Piłka nożna', 'Polska', 'polish football', 'three-way'),
+                ('Piłka nożna', 'Finlandia', 'finnish football', 'three-way'),
+                ('Piłka nożna', 'Brazylia', 'brazilian football', 'three-way')
+    ]
+
     # initialize output DataFrame
     columns = ["game_datetime", "team_1",  "team_2", "stake_1_wins",
             "stake_draw", "stake_2_wins", "url", "category"]
     df = pd.DataFrame({}, columns=columns)
+    errors = []
     
-    #   chrome driver setup
+    # chrome driver setup
     options = Options()
     # options.add_argument("--headless")  # opens in background
     options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(3)
-    errors = []
+    # driver.implicitly_wait(1)
 
-    for link in links:
-        # unpack tuple
-        url, category, bet_outcomes = link
+    driver.get('https://www.betclic.pl/')
+    time.sleep(3)
 
+    # scrape dynamic pages
+    for discipline_name, discipline_subtype, category, bet_outcomes in dynamic_links:
+        df_new, errors_new = scrape_discipline_subclass(driver, discipline_name, discipline_subtype, category, bet_outcomes)
+        df = df._append(df_new, ignore_index=True)
+        errors.extend(errors_new)
+    
+    # scrape static pages
+    for url, category, bet_outcomes in static_links:
         # load page
-        driver.get(url)     
+        driver.get(url)
         
-        # in case of 'stale' elements
-        time.sleep(1)
+        scroll_to_end_of_page(driver)
 
         # Get the current URL, skip if redirectred
         if url != driver.current_url:
             errors.append("BetClic: URL Redirected to: " + driver.current_url)
             continue
+        
+        df_new, errors_new = scrape_page_items(driver, category, bet_outcomes)
+        df = df._append(df_new, ignore_index=True)
+        errors.extend(errors_new)
 
-        # get table elements of every polish football league (on the same page)
-        group_events = driver.find_elements(By.CLASS_NAME, 'groupEvents')
-                                                         
-        for index, group_event in enumerate(group_events):
-            scroll_into_view(driver, group_events[min(index+5, len(group_events)-1)], sleep=0)
-
-            # scrape events date (common for section)
-            events_date = group_event.find_element(By.CLASS_NAME, "groupEvents_headTitle").text
-
-            # manage unexpected values
-            if events_date == 'Teraz':
-                continue            
-            elif events_date == 'Dzisiaj':
-                events_date = date.today().strftime("%d.%m.%Y")
-            elif events_date == 'Jutro':
-                events_date = (date.today() + timedelta(days=1)).strftime("%d.%m.%Y")
-            elif events_date == 'Pojutrze':
-                events_date = (date.today() + timedelta(days=2)).strftime("%d.%m.%Y")
-
-            # scrape events wtithin section & find elements until each is loaded
-            last_elements_count = 0
-            current_elements_count = -1       
-            while last_elements_count != current_elements_count:
-                last_elements_count = current_elements_count
-                # get table elements of every league (on the same page)
-                events = group_event.find_elements(By.CLASS_NAME, "cardEvent")
-                current_elements_count = len(events)
-                
-                if current_elements_count > 0:
-                    # scroll to last loaded element
-                    driver.execute_script("arguments[0].scrollIntoView(false);", events[-1])
-
-            for event in events:
-                scroll_into_view(driver, event, sleep=0)
-
-                item = event.text.split("\n")
-                stakes = list(filter(lambda x: x.replace(",", "").isnumeric(), item))
-
-                # get events time
-                event_time = event.find_element(By.CLASS_NAME, "scoreboard_hour").text
-
-                # set game datetime
-                game_datetime = datetime.strptime(str(events_date) + " " + event_time, "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M")
-
-                # continue if gametime doesnt match regex
-                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
-                if not re.match(date_pattern, game_datetime):
-                    errors.append("BetClic: Datetime error: " + game_datetime)
-                    continue    
-                
-                if bet_outcomes == 'two-way':
-                    # if invalid data - skip 
-                    if len(item) < 8 or len(stakes) != 2:
-                        errors.append("BetClic: Error appending - " + " | ".join(item))
-                        continue
-
-                    # append item
-                    dct = {"game_datetime": game_datetime,
-                           "team_1": item[3],
-                           "team_2": item[5],
-                           "stake_1_wins": stakes[0].replace(",", "."),
-                           "stake_draw": np.inf,
-                           "stake_2_wins": stakes[1].replace(",", "."),
-                           "url": url,
-                           "category": category
-                        }
-                
-                elif bet_outcomes == 'three-way':
-                    # if invalid data - skip 
-                    if len(item) < 11 or len(stakes) != 3:
-                        errors.append("BetClic: Error appending - " + " | ".join(item))
-                        continue
-
-                    # append item
-                    dct = {"game_datetime": game_datetime, 
-                           "team_1": item[3],
-                           "team_2": item[5],
-                           "stake_1_wins": stakes[0].replace(",", "."),
-                           "stake_draw": stakes[1].replace(",", "."),
-                           "stake_2_wins": stakes[2].replace(",", "."),
-                           "url": url,
-                           "category": category
-                        }
-                df = df._append(pd.DataFrame([dct], columns=columns), ignore_index=True)
-
-    # close chrome
+    # Close the WebDriver
     driver.quit()
     
     return df, errors
 
 
+def scrape_discipline_subclass(driver, discipline_name, discipline_subtype, category, bet_outcomes):
+    errors = []
+    df = pd.DataFrame()
+    action_chains = ActionChains(driver)
+
+    scroll_to_end_of_page(driver)
+
+    # try to find disciplines (retry if stale)
+    disciplines = driver.find_elements(By.XPATH, "/html/body/app-desktop/div[1]/div/sports-left-menu/sports-list-menu/sports-list/div/div[2]/sports-tile[*]")
+
+    if len(disciplines) == 0:
+        errors.append(f"Betclic: no disciplines found [{discipline_name}/{discipline_subtype}]")
+        return df, errors
+    
+    # find and filter discipline
+    for index, d in enumerate(disciplines):
+        scroll_into_view(driver, d, sleep=0) 
+        if discipline_name == d.text.split('\n')[0]:
+            discipline = d
+            break
+        elif index == len(disciplines)-1:
+            errors.append(f"Betclic: discipline not found [{discipline_name}/{discipline_subtype}]")
+            return df, errors
+
+    # activate discipline dropdown list
+    success = activate_dropdown_list(driver, action_chains, discipline)
+    if success == False: 
+        # refresh page on error
+        driver.get('https://www.betclic.pl/')
+        time.sleep(3)
+        errors.append(f"Betclic: Unable to activate dropdown list [{discipline_name}/{discipline_subtype}]")
+        return df, errors
+
+    # try to find discipline subtypes 
+    subtypes = discipline.find_elements(By.XPATH, ".//sports-details/div/ul/li[*]")
+    
+    if len(subtypes) == 0:
+        errors.append(f"Betclic: '{discipline_name}/{discipline_subtype}' not found")
+        return df, errors
+ 
+    # find and filter discipline
+    for index, s in enumerate(subtypes):
+        scroll_into_view(driver, s, sleep=0) 
+        if discipline_subtype == s.text.split('\n')[0]:
+            subtype = s
+            break
+        elif index == len(subtypes)-1:
+            errors.append(f"Betclic: Unable to find subtype ['{discipline_name}/{discipline_subtype}']")
+            return df, errors
+
+    # activate subtype dropdown list
+    success = activate_dropdown_list(driver, action_chains, subtype)
+    if success == False:
+        errors.append(f"Betclic: Unable to open subtype dropdown list '{subtype.text}' ['{discipline_name}/{discipline_subtype}']")
+        return df, errors
+    
+    leagues = subtype.find_elements(By.XPATH, "./ul/sports-tile[*]")
+    
+    if len(leagues) == 0:
+        errors.append(f"Betclic: leagues '{discipline_name}/{discipline_subtype}' not found")
+        return df, errors
+    
+    for league in leagues:
+       # activate subtype dropdown list
+        success = activate_dropdown_list(driver, action_chains, league)
+        if success == False:
+            errors.append(f"Betclic: Unable to read subtype URL ['{discipline_name}/{discipline_subtype}']")
+            continue
+
+        time.sleep(1)
+        
+        # new_urls.append(driver.current_url)
+        df_new, errors_new = scrape_page_items(driver, category, bet_outcomes)
+        df = df._append(df_new, ignore_index=True)
+        errors.extend(errors_new)
+
+    # deactivate discipline dropdown list
+    success = deactivate_dropdown_list(driver, action_chains, discipline)
+    if success == False: 
+        # refresh page on error
+        driver.get('https://www.betclic.pl/')
+        time.sleep(3)
+        errors.append(f"Betclic: Unable to deactivate dropdown list [{discipline_name}/{discipline_subtype}]")
+        return df, errors
+
+    return df, errors
+
+
+def scrape_page_items(driver, category, bet_outcomes):
+    errors = []
+    df = pd.DataFrame()
+    # try to find group events (retry if stale)
+    group_events, success = find_elements_without_stale(driver, 'groupEvents', By.CLASS_NAME)
+
+    if success == False:
+        errors.append(f"Betclic: '{category}' elements timeout")
+        return df, errors
+
+    # loop from last to 1st event                
+    for group_event in reversed(group_events):
+        scroll_into_view(driver, group_event, sleep=0)
+
+        # scrape events date (common for section)
+        events_date, success = find_elements_without_stale(group_event, 'groupEvents_headTitle', By.CLASS_NAME)
+
+        if success == False or len(events_date) == 0:
+            errors.append(f"Betclic: '{category}' event element timeout")
+            continue
+
+        # manage unexpected values
+        if events_date[0].text == 'Teraz':
+            return df, errors           
+        elif events_date[0].text == 'Dzisiaj':
+            events_date = date.today().strftime("%d.%m.%Y")
+        elif events_date[0].text == 'Jutro':
+            events_date = (date.today() + timedelta(days=1)).strftime("%d.%m.%Y")
+        elif events_date[0].text == 'Pojutrze':
+            events_date = (date.today() + timedelta(days=2)).strftime("%d.%m.%Y")
+        else:
+            events_date = events_date[0].text
+
+        events, success = find_elements_without_stale(group_event, 'cardEvent', By.CLASS_NAME)
+        for event in reversed(events):
+            scroll_into_view(driver, event, sleep=0)
+
+            # event data
+            team_1 = event.find_elements(By.XPATH, ".//*[contains(@class, 'scoreboard_contestant-1')]")
+            team_2 = event.find_elements(By.XPATH, ".//*[contains(@class, 'scoreboard_contestant-2')]")
+            bet_odds = event.find_elements(By.XPATH, ".//*[contains(@class, 'oddValue')]")
+            event_time = event.find_elements(By.XPATH, ".//*[contains(@class, 'scoreboard_hour')]")
+
+            # validate data
+            numeric_pattern = re.compile(r'^[-+]?[0-9]+(\.[0-9]+)?$')
+            if len(team_1) != 1 or len(team_2) != 1 or len(bet_odds) < 2 or len(event_time) != 1 or any(not numeric_pattern.match(element.text.replace(",", ".")) for element in bet_odds):
+                errors.append("BetClic: Values not found: " + " | ".join(event.text.split('\n')))
+                continue   
+
+            # check if event datetime matches regex
+            game_datetime = datetime.strptime(str(events_date) + " " + event_time[0].text, "%d.%m.%Y %H:%M").strftime("%d-%m %H:%M")
+            date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+            if not re.match(date_pattern, game_datetime):
+                errors.append("BetClic: Datetime error: " + game_datetime)
+                continue    
+            
+            if bet_outcomes == 'two-way':
+                # create df row
+                df_row = {"game_datetime": game_datetime,
+                    "team_1": team_1[0].text,
+                    "team_2": team_2[0].text,
+                    "stake_1_wins": bet_odds[0].text.replace(",", "."),
+                    "stake_draw": np.inf,
+                    "stake_2_wins": bet_odds[1].text.replace(",", "."),
+                    "url": driver.current_url,
+                    "category": category
+                    }
+            
+            elif bet_outcomes == 'three-way':
+                # create df row
+                df_row = {"game_datetime": game_datetime, 
+                    "team_1": team_1[0].text,
+                    "team_2": team_2[0].text,
+                    "stake_1_wins": bet_odds[0].text.replace(",", "."),
+                    "stake_draw": bet_odds[1].text.replace(",", "."),
+                    "stake_2_wins": bet_odds[2].text.replace(",", "."),
+                    "url": driver.current_url,
+                    "category": category
+                    }
+            # append row
+            df = df._append(pd.DataFrame([df_row]), ignore_index=True)
+
+    return df, errors
+
+
+def activate_dropdown_list(driver, action_chains, element):
+    retries = 0
+    success = True
+    try:
+        scroll_into_view(driver, element, sleep=0) 
+        while not 'is-active' in element.get_attribute('class'):
+            if retries >= 5:
+                success = False
+                break
+            else:
+                time.sleep(0.25)
+                action_chains.click(element).perform()
+                retries += 1
+    except Exception:
+        success = False
+        pass
+    
+    return success
+
+
+def deactivate_dropdown_list(driver, action_chains, element):
+    retries = 0
+    success = True
+    try:
+        scroll_into_view(driver, element, sleep=0) 
+        while 'is-active' in element.get_attribute('class'):
+            if retries >= 5:
+                success = False
+                break
+            else:
+                time.sleep(0.25)
+                action_chains.click(element.find_element(By.XPATH, "./*[contains(@class, 'sportList_itemWrapper')]")).perform()
+                retries += 1
+    except Exception:
+        success = False
+        pass
+
+    return success
+
+
 # # test
-# # expected columns
-# # ["team_1",  "team_2", "stake_1_wins", "stake_draw", "stake_2_wins", "url"]
-
-
 
 # df = pd.DataFrame()
-# df = df._append(scrape_betclic(), ignore_index=True)
-# print(df.head())
-
+# df, errors = scrape_betclic()
+# print(df.groupby(['category']).size())
