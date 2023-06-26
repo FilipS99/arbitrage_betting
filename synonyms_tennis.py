@@ -1,0 +1,5 @@
+synonyms_tennis = {
+    '': ''
+
+    # tennis
+}

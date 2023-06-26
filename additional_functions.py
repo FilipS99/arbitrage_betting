@@ -1,6 +1,40 @@
 import time
 from datetime import datetime, timedelta
 from selenium.webdriver.common.by import By
+import pandas as pd
+
+def create_report_sheet(df):
+    # Write df1 to the first sheet
+    df1 = df[['game_datetime', 'category', 'team_1', 'team_2']].copy()
+    group_sizes = df.groupby(['game_datetime', 'category', 'team_1', 'team_2']).size().reset_index(name='group_size')
+    df_merged = pd.merge(df1, group_sizes, on=['game_datetime', 'category', 'team_1', 'team_2']).drop_duplicates()
+    
+    # Count the occurrences of each value in the 'column_name' column
+    value_counts = df_merged['game_datetime'].value_counts()
+
+    # Get the values that occur more than once (i.e., not unique)
+    not_unique_values = value_counts[value_counts > 1].index
+
+    # Filter the DataFrame by keeping only the rows with values that are not unique
+    filtered_df = df_merged[df_merged['game_datetime'].isin(not_unique_values)]
+
+    # Create a new DataFrame to store the updated rows
+    updated_df = pd.DataFrame(columns=filtered_df.columns)
+
+    # Iterate over each row in the original DataFrame
+    for i in range(len(filtered_df)):
+        row = filtered_df.iloc[i]
+        updated_df = updated_df._append(row)
+        
+        # Check if the value in 'column_name' changes compared to the next row
+        if i < len(filtered_df) - 1 and row['game_datetime'] != filtered_df.iloc[i + 1]['game_datetime']:
+            empty_row = pd.Series({}, name='empty_row')
+            updated_df = updated_df._append(empty_row)
+            
+    # Reset the index of the updated DataFrame
+    updated_df.reset_index(drop=True, inplace=True)
+    
+    return updated_df
 
 def scroll_into_view(driver, element, sleep=0):
     # Get initial element position
@@ -105,6 +139,11 @@ def scroll_to_end_of_page(driver):
         # Check if the scroll height remains the same, indicating that we have reached the end
         if new_scroll_height == prev_scroll_height:
             break
+
+
+def scroll_to_start_of_page(driver):
+    # Scroll to the top of the page
+    driver.execute_script("window.scrollTo(0, 0);")
 
 
 # days_of_week1 = ['PON.', 'WT.', 'ŚR.', 'CZW.', 'PT.', 'SOB.', 'NIEDZ.', '01.10']

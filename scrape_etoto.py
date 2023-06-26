@@ -7,8 +7,9 @@ import time
 from selenium.webdriver.common.action_chains import ActionChains
 import re
 from typing import Tuple
+from datetime import date
 
-from additional_functions import scroll_into_view, get_closest_week_day, find_elements_without_stale
+from additional_functions import scroll_into_view, get_closest_week_day, scroll_to_end_of_page, scroll_to_start_of_page
 
 
 def scrape_etoto() -> Tuple[pd.DataFrame, list]:
@@ -34,12 +35,7 @@ def scrape_etoto() -> Tuple[pd.DataFrame, list]:
     driver.get(url)
     
     # in case of 'stale' elements
-    time.sleep(3)
-
-    # Get the current URL, skip if redirectred
-    # if url != driver.current_url:
-    #     errors.append("Etoto: URL Redirected to: " + driver.current_url)
-    #     return
+    # time.sleep(3)
 
     # (discipline_name, subtype, bet_outcomes, category
     disciplines_data = [
@@ -51,171 +47,179 @@ def scrape_etoto() -> Tuple[pd.DataFrame, list]:
                         ('Sporty walki', '*', 'two-way', 'ufc')]
 
     for discipline_name, discipline_subtype, bet_outcomes, category in disciplines_data:
-        # try to find disciplines (retry if stale)
-        disciplines, success = find_elements_without_stale(driver, "/html/body/div[3]/div[*]/div[1]/div[2]/div[1]/div/div/ul/li[*]")
-        
-        if success == False:
-            errors.append(f"Etoto: finding disciplines elements timeout")
-            return df, errors
-    
-        # filter disciplines
-        discipline = [d for d in disciplines if discipline_name == d.text.split('\n')[0]]
-        if len(discipline) != 1:
-            errors.append(f"Etoto: '{discipline_name}' not found [{len(discipline)} matches]")
-            continue
+        try:
+            scroll_to_end_of_page(driver)
 
-        # activate discipline dropdown list
-        success = activate_dropdown_list(action_chains, discipline[0])
-        if success == False: 
-            errors.append(f"Etoto: Unable to activate dropdown list [{discipline_name}]")
-            continue
-
-        # try to find discipline subtypes (retry if stale)
-        subtypes, success = find_elements_without_stale(discipline[0], "./ul/li[*]")
-        if success == False:
-            errors.append(f"Etoto: '{discipline_name}/{discipline_subtype}' elements timeout")
-            continue
-
-        # filter discipline subtypes if only one desired
-        if discipline_subtype != '*':
-            subtypes = [s for s in subtypes if discipline_subtype in s.text]
+            # try to find disciplines (retry if stale)
+            disciplines = driver.find_elements(By.XPATH, "/html/body/div[3]/div[*]/div[1]/div[2]/div[1]/div/div/ul/li[*]")
             
-            if len(subtypes) != 1:
-                errors.append(f"Etoto: '{discipline_name}/{discipline_subtype}' not found [{len(discipline)}]")
-                continue
+            if len(disciplines) == 0:
+                errors.append(f"Etoto: disciplines not found")
+                return df, errors
         
-        # for subtypes for discipline
-        for subtype in subtypes:
-            # activate subtype dropdown list
-            success = activate_dropdown_list(action_chains, subtype)
-            if success == False:
-                errors.append(f"Etoto: Unable to open subtype dropdown list [{subtype}]")
+            # filter disciplines
+            discipline = [d for d in disciplines if discipline_name == d.text.split('\n')[0]]
+            if len(discipline) != 1:
+                errors.append(f"Etoto: '{discipline_name}' not found [{len(discipline)} matches]")
                 continue
 
-            # # open dropdown list
-            # retries = 0
-            # error = False
-            # while not 'is-active' in subtype.get_attribute('class'):
-            #     if retries >= 3:
-            #         errors.append(f"Etoto: Unable to open dropdown list [{subtype}]")
-            #         error = True
-            #         break
-            #     else:
-            #         action_chains.click(subtype).perform()
-            #         retries += 1
-            
-            # if error == True:
-            #     continue
+            # activate discipline dropdown list
+            success = activate_dropdown_list(driver, action_chains, discipline[0])
+            if success == False: 
+                errors.append(f"Etoto: Unable to activate dropdown list [{discipline_name}]")
+                continue
 
-            # try to find elements (retry if stale)
-            leagues, success = find_elements_without_stale(subtype, "./ul/li[*]/a/span")
-            
-            if success == False:
+            # try to find discipline subtypes (retry if stale)
+            subtypes = discipline[0].find_elements(By.XPATH, "./ul/li[*]")
+            if len(subtypes) == 0:
                 errors.append(f"Etoto: '{discipline_name}/{discipline_subtype}' elements timeout")
                 continue
 
-            for league in leagues:
-                # try to find discipline subtypes (retry if stale)
-                subtypes, success = find_elements_without_stale(discipline[0], "./ul/li[*]")
-                if success == False:
-                    errors.append(f"Etoto: '{discipline_name}/{discipline_subtype}' elements timeout")
+            # filter discipline subtypes if only one desired
+            if discipline_subtype != '*':
+                subtypes = [s for s in subtypes if discipline_subtype in s.text]
+                
+                if len(subtypes) != 1:
+                    errors.append(f"Etoto: '{discipline_name}/{discipline_subtype}' not found [{len(discipline)}]")
                     continue
+            
+            # for subtypes for discipline
+            for subtype in reversed(subtypes):
+                try:
+                    scroll_into_view(driver, subtype)
 
-                # activate subtype dropdown list
-                success = activate_dropdown_list(action_chains, subtype)
-                if success == False:
-                    errors.append(f"Etoto: Unable to open subtype dropdown list [{subtype}]")
-                    continue
+                    # activate subtype dropdown list
+                    success = activate_dropdown_list(driver, action_chains, subtype)
+                    if success == False:
+                        errors.append(f"Etoto: Unable to open subtype dropdown list [{subtype}]")
+                        continue
 
-                action_chains.click(league).perform()
-
-                # try to find elements (retry if stale)
-                elements, success = find_elements_without_stale(driver, '/html/body/div[3]/div[*]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul')
-                if success == False:
-                    errors.append(f"Etoto: Unable to get league elements [{league.text}]")
-                    continue
-
-                for index, element in enumerate(elements):
-                    scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
-
-                    item = element.text.split('\n')
-
-                    # set game datetime
-                    if len(item) > 4:
-                        game_datetime = get_closest_week_day(item[2]).replace('.', '-') + ' ' + item[3]   
-
-                    # continue if gametime doesnt match regex
-                    date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
-                    if not re.match(date_pattern, game_datetime):
-                        errors.append("Etoto: Datetime error: " + game_datetime)
-                        continue    
+                    # try to find elements (retry if stale)
+                    leagues = subtype.find_elements(By.XPATH, "./ul/li[*]/a/span")
                     
-                    if bet_outcomes == 'two-way':
-                        # if invalid data - skip 
-                        if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric():
-                            errors.append("Etoto: Error appending - " + " | ".join(item))
-                            continue
-                        
-                        # append item
-                        dct = {"game_datetime": game_datetime,
-                            "team_1": item[0],
-                            "team_2": item[1],
-                            "stake_1_wins": item[4],
-                            "stake_draw": np.inf,
-                            "stake_2_wins": item[5],
-                            "url": driver.current_url,
-                            "category": category}
-                        
-                    elif bet_outcomes == 'three-way':
-                        # if invalid data - skip 
-                        if len(item) < 7 or not item[4].replace(".", "").isnumeric() or not item[5].replace(".", "").isnumeric() or not item[6].replace(".", "").isnumeric():
-                            errors.append("Etoto: Error appending - " + " | ".join(item))
-                            continue
-                        
-                        # append item
-                        dct = {"game_datetime": game_datetime,
-                            "team_1": item[0],
-                            "team_2": item[1],
-                            "stake_1_wins": item[4],
-                            "stake_draw": item[5],
-                            "stake_2_wins": item[6],
-                            "url": driver.current_url,
-                            "category": category}
-                        
+                    if len(leagues) == 0:
+                        errors.append(f"Etoto: '{discipline_name}/{discipline_subtype}' elements timeout")
+                        continue
 
-                    df = df._append(pd.DataFrame(
-                        [dct], columns=columns), ignore_index=True)
+                    for league in reversed(leagues):
+                        try:
+                            scroll_into_view(driver, league)
+                            # try to find discipline subtypes (retry if stale)
+                            subtypes = discipline[0].find_elements(By.XPATH, "./ul/li[*]")
+                            if len(subtypes) == 0:
+                                errors.append(f"Etoto: '{discipline_name}/{discipline_subtype}' elements timeout")
+                                continue
+
+                            # activate subtype dropdown list
+                            success = activate_dropdown_list(driver, action_chains, subtype)
+                            if success == False:
+                                errors.append(f"Etoto: Unable to open subtype dropdown list [{subtype}]")
+                                continue
+
+                            action_chains.click(league).perform()
+
+                            scroll_to_start_of_page(driver)
+
+                            # try to find elements (retry if stale)
+                            elements = driver.find_elements(By.XPATH, '/html/body/div[3]/div[*]/div[1]/div[2]/div[3]/div/div/div[3]/partial[4]/div/div/div/div[2]/div[2]/div[*]/ul/li[*]/ul')
+                            if len(elements) == 0:
+                                errors.append(f"Etoto: Unable to get league elements [{league.text}]")
+                                continue
+
+                            for element in reversed(elements):
+                                try:
+                                    scroll_into_view(driver, element, sleep=0)
+
+                                    # item = element.text.split('\n')
+
+                                    # event data
+                                    team_1 = element.find_elements(By.XPATH, ".//*[contains(@class, 'participant1')]")
+                                    team_2 = element.find_elements(By.XPATH, ".//*[contains(@class, 'participant2')]")
+                                    bet_odds = element.find_elements(By.XPATH, ".//*[contains(@class, 'eventListOutcomesPartial')]")
+                                    event_time = element.find_elements(By.XPATH, ".//*[contains(@class, 'date-time')]")
+                                    
+                                    # validate data
+                                    if len(team_1) != 1 or len(team_2) != 1 or len(bet_odds) == 0 or len(event_time) != 1:
+                                        errors.append("Etoto: Values not found: " + " | ".join(element.text.split('\n')))
+                                        continue  
+
+                                    numeric_pattern = re.compile(r'^[-+]?[0-9]+(\.[0-9]+)?$')
+                                    if any(not numeric_pattern.match(odd.replace(",", ".")) for odd in bet_odds[0].text.split('\n')):
+                                        errors.append("Etoto: Values not found: " + " | ".join(element.text.split('\n')))
+                                        continue  
+
+                                    game_datetime = event_time[0].text.replace('.', '-').replace('\n', ' ').replace('Dzisiaj', date.today().strftime("%d-%m"))  
+
+                                    # continue if gametime doesnt match regex
+                                    date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                                    if not re.match(date_pattern, game_datetime):
+                                        errors.append("Etoto: Datetime error: " + game_datetime)
+                                        continue    
+                                    
+                                    if bet_outcomes == 'two-way':
+                                        # if invalid data - skip 
+                                        if len(bet_odds[0].text.split('\n')) != 2:
+                                            errors.append("Etoto: Error appending - " + " | ".join(element.text.split('\n')))
+                                            continue
+                                        
+                                        # append item
+                                        df_row = {"game_datetime": game_datetime,
+                                            "team_1": team_1[0].text,
+                                            "team_2": team_2[0].text,
+                                            "stake_1_wins": bet_odds[0].text.split('\n')[0],
+                                            "stake_draw": np.inf,
+                                            "stake_2_wins": bet_odds[0].text.split('\n')[1],
+                                            "url": driver.current_url,
+                                            "category": category}
+                                        
+                                    elif bet_outcomes == 'three-way':
+                                        # if invalid data - skip 
+                                        if len(bet_odds[0].text.split('\n')) != 3:
+                                            errors.append("Etoto: Error appending - " + " | ".join(element.text.split('\n')))
+                                            continue
+                                        
+                                        # append item
+                                        df_row = {"game_datetime": game_datetime,
+                                            "team_1": team_1[0].text,
+                                            "team_2": team_2[0].text,
+                                            "stake_1_wins": bet_odds[0].text.split('\n')[0],
+                                            "stake_draw": bet_odds[0].text.split('\n')[1],
+                                            "stake_2_wins": bet_odds[0].text.split('\n')[2],
+                                            "url": driver.current_url,
+                                            "category": category}
+                                        
+
+                                    df = df._append(pd.DataFrame(
+                                        [df_row], columns=columns), ignore_index=True)
+                                    
+                                except Exception:
+                                    errors.append("Etoto: Element skipped (probably stale)")
+                                    continue
+
+                        except Exception:
+                            errors.append("Etoto: League skipped (probably stale)")
+                            continue
                     
-            # close subtype dropdown list
-            retries = 0
-            error = False
-            try:
-                while 'is-active' in subtype.get_attribute('class'):
-                    if retries >= 3:
-                        errors.append(f"Etoto: Unable to close subtype dropdown list [{subtype}]")
-                        error = True
-                        break
-                    else:
-                        action_chains.click(subtype).perform()
-                        retries += 1
-            except:
-                pass
+                    # close subtype dropdown list
+                    deactivate_dropdown_list(driver, action_chains, subtype)
+                    if not success:
+                        errors.append(f"Etoto: Unable to close subtype dropdown list [{subtype.text}]")
+
+                except Exception:
+                    errors.append("Etoto: Subtype skipped (probably stale)")
+                    continue
+
+        except Exception:
+            errors.append("Etoto: Discipline skipped (probably stale)")
+            continue
+                    
+                
                     
         # close discipline dropdown list
-        retries = 0
-        error = False
-        while 'is-active' in discipline[0].get_attribute('class'):
-            if retries >= 3:
-                errors.append(f"Etoto: Unable to close discipline dropdown list [{discipline_name}]")
-                error = True
-                break
-            else:
-                time.sleep(1)
-                action_chains.click(discipline[0]).perform()
-                retries += 1
-        
-        if error == True:
-            continue
+        deactivate_dropdown_list(driver, action_chains, discipline[0])
+
+        if not success:
+            errors.append(f"Etoto: Unable to close discipline dropdown list [{discipline_name}]")
         
     # Close the WebDriver
     driver.quit()
@@ -223,23 +227,49 @@ def scrape_etoto() -> Tuple[pd.DataFrame, list]:
     return df, errors
 
 
-
-def activate_dropdown_list(action_chains, element):
+def activate_dropdown_list(driver, action_chains, element):
     retries = 0
     success = True
-    while not 'is-active' in element.get_attribute('class'):
-        if retries >= 3:
-            success = False
-            break
-        else:
-            action_chains.click(element).perform()
-            retries += 1
+    try:
+        scroll_into_view(driver, element, sleep=0) 
+        while not 'is-active' in element.get_attribute('class'):
+            if retries >= 5:
+                success = False
+                break
+            else:
+                time.sleep(0.25)
+                action_chains.click(element).perform()
+                retries += 1
+    except Exception:
+        success = False
+        pass
     
+    return success
+
+
+def deactivate_dropdown_list(driver, action_chains, element):
+    retries = 0
+    success = True
+    try:
+        scroll_into_view(driver, element, sleep=0) 
+        while 'is-active' in element.get_attribute('class'):
+            if retries >= 5:
+                success = False
+                break
+            else:
+                time.sleep(0.25)
+                action_chains.click(element.find_element(By.XPATH, "./*[contains(@class, 'sportList_itemWrapper')]")).perform()
+                retries += 1
+    except Exception:
+        success = False
+        pass
+
     return success
 
 
 # # # test
 
 # df = pd.DataFrame()
-# df = df._append(scrape_etoto(), ignore_index=True)
+# errors = []
+# df, errors = scrape_etoto()
 # print(df.head())

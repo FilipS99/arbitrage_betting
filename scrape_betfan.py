@@ -61,8 +61,8 @@ def scrape_betfan() -> Tuple[pd.DataFrame, list]:
         # scrape rows
         elements = driver.find_elements(By.XPATH,'/html/body/div[1]/div[2]/main/div[3]/div/div[*]/div[2]/div[*]') 
 
-        for index, element in enumerate(elements):
-            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
+        for element in elements:
+            scroll_into_view(driver, element, sleep=0)
 
             item = element.text.split('\n')
 

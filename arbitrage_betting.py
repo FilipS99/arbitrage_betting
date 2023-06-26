@@ -17,7 +17,7 @@ from scrape_betclic import scrape_betclic
 from scrape_totalbet import scrape_totalbet
 from rename_synonyms import rename_synonyms
 from calculate_bets_outcomes import calculate_bets_outcomes
-
+from additional_functions import create_report_sheet
 
 # overriding Thread so I can access outputs
 class ScrapeThread(threading.Thread):
@@ -55,8 +55,8 @@ if __name__ == "__main__":
 
     # Define the list of threads
     threads = [ 
-                'thread_sts', 'thread_betclic', 'thread_lvbet', 'thread_fortuna',  
-                'thread_superbet', 'thread_fuksiarz', 'thread_etoto', 'thread_totolotek', 
+                'thread_etoto', 'thread_sts', 'thread_betclic', 'thread_lvbet', 
+                'thread_fortuna','thread_superbet', 'thread_fuksiarz', 'thread_totolotek', 
                 'thread_forbet', 'thread_betfan', 'thread_totalbet' 
               ]
     
@@ -106,12 +106,25 @@ if __name__ == "__main__":
     # generate all possible bets combinations
     calculate_bets_outcomes(df, bet_amount, output_path, filename_datetime)
 
+    # Create an ExcelWriter object with the desired file path
+    writer = pd.ExcelWriter(output_path+filename_datetime+"_scraped.xlsx")
 
-    # save scraped data
-    df.to_excel(output_path+filename_datetime+"_scraped.xlsx",
-                header=True, index=False)
+    report_df = create_report_sheet(df)
+    report_df.to_excel(writer, sheet_name='Report', header=True, index=False)
+
+    # Write df to the second sheet
+    df.to_excel(writer, sheet_name='Scraped', header=True, index=False)
+
+    # Save the Excel file
+    writer._save()
+
+    # # save scraped data
+    # df.to_excel(,
+    #             header=True, index=False)
     
     end_time = time.time()
     execution_time = end_time - start_time
 
     print("\nExecution time:", round(execution_time, 2), "seconds")
+
+
