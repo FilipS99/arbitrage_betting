@@ -16,13 +16,14 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
                     ['baraż / PF', ''],
                     ['baraż / Finał', ''],
                     ['(HITDNIA)', ''],
+                    ['U20', ''],
                     [' ', ''], 
                     ['-', ''], 
                     ['/', '']
                    ]
     for replace in replace_list:
         df[['team_1','team_2']] = df[['team_1','team_2']].replace(replace[0], replace[1], regex = True)
-
+        
     # upper
     df['team_1'] = df['team_1'].str.upper()
     df['team_2'] = df['team_2'].str.upper()
