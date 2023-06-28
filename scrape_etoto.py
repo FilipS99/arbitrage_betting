@@ -28,7 +28,7 @@ def scrape_etoto() -> Tuple[pd.DataFrame, list]:
     options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(3)
     action_chains = ActionChains(driver)
 
     # load page

@@ -28,8 +28,8 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
                 r' ',]  
 
     for pattern in patterns:
-        df['team_1'] = df['team_1'].str.replace(pattern, '', regex=True)
-        df['team_2'] = df['team_2'].str.replace(pattern, '', regex=True)
+        df['team_1'] = df['team_1'].str.replace(pattern, '', flags=re.IGNORECASE, regex=True)
+        df['team_2'] = df['team_2'].str.replace(pattern, '', flags=re.IGNORECASE, regex=True)
 
     # upper
     df['team_1'] = df['team_1'].str.upper()
