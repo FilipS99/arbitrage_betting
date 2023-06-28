@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 
 from synonyms_polish_football import synonyms_polish_football
 from synonyms_finnish_football import synonyms_finnish_football
@@ -10,20 +11,26 @@ from synonyms_tennis import synonyms_tennis
 
 
 def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
-    # replace in team names
-    replace_list = [
-                    ['baraż / PF / Rozszerzona oferta LIVE', ''],
-                    ['baraż / PF', ''],
-                    ['baraż / Finał', ''],
-                    ['(HITDNIA)', ''],
-                    ['U20', ''],
-                    [' ', ''], 
-                    ['-', ''], 
-                    ['/', '']
-                   ]
-    for replace in replace_list:
-        df[['team_1','team_2']] = df[['team_1','team_2']].replace(replace[0], replace[1], regex = True)
-        
+    # delete from team names
+    patterns = [r'\(K\)', 
+                r'\(K\)',
+                r'\(WOM\)',
+                r'\(KOBIETY\)',
+                r'\(HITDNIA\)',
+                r'baraż / PF / Rozszerzona oferta LIVE',
+                r'baraż / PF',
+                r'baraż / Finał',
+                r'U20',
+                r'\[K\]',
+                r'\[WOM\]',
+                r'-',
+                r'/',
+                r' ',]  
+
+    for pattern in patterns:
+        df['team_1'] = df['team_1'].str.replace(pattern, '', regex=True)
+        df['team_2'] = df['team_2'].str.replace(pattern, '', regex=True)
+
     # upper
     df['team_1'] = df['team_1'].str.upper()
     df['team_2'] = df['team_2'].str.upper()
@@ -34,10 +41,6 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[df['category'] == 'rugby'] = df.loc[df['category'] == 'rugby'].replace(synonyms_rugby)
     df.loc[df['category'] == 'ufc'] = df.loc[df['category'] == 'ufc'].replace(synonyms_ufc)
     df.loc[df['category'] == 'tennis'] = df.loc[df['category'] == 'tennis'].replace(synonyms_tennis)
-    
-
-    # df = df.replace({'team_1': synonyms,
-    #                 'team_2': synonyms})
 
     return df
 

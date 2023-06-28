@@ -63,55 +63,61 @@ def scrape_totolotek() -> Tuple[pd.DataFrame, list]:
                 driver.execute_script("arguments[0].scrollIntoView(false);", elements[-1])
         
         for index, element in enumerate(elements):
-            scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
+            try: 
+                scroll_into_view(driver, elements[min(index+5, len(elements)-1)], sleep=0)
 
-            # split row into seperate items  
-            item = element.text.split("\n")
+                # split row into seperate items  
+                item = element.text.split("\n")
 
-            if len(item) > 4:
-                # set game datetime
-                game_datetime = (item[2][-5:] + ' ' + item[3]).replace('.','-')
+                if len(item) > 4:
+                    # set game datetime
+                    game_datetime = (item[2][-5:] + ' ' + item[3]).replace('.','-')
 
-                # continue if gametime doesnt match regex
-                date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
-                if not re.match(date_pattern, game_datetime):
-                    errors.append("Totolotek: Datetime error: " + game_datetime)
-                    continue
-            
-            if bet_outcomes == 'two-way':
-                # if invalid data - skip 
-                if len(item) < 8 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
-                    errors.append("Totolotek: Error appending - " + " | ".join(item))
-                    continue
+                    # continue if gametime doesnt match regex
+                    date_pattern = r"\d{2}-\d{2} \d{2}:\d{2}"
+                    if not re.match(date_pattern, game_datetime):
+                        errors.append("Totolotek: Datetime error: " + game_datetime)
+                        continue
+                
+                if bet_outcomes == 'two-way':
+                    # if invalid data - skip 
+                    if len(item) < 8 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric():
+                        errors.append("Totolotek: Error appending - " + " | ".join(item))
+                        continue
 
-                # append item
-                dct = {"game_datetime": game_datetime,
-                    "team_1": item[0],
-                    "team_2": item[1],
-                    "stake_1_wins": item[5],
-                    "stake_draw": np.inf,
-                    "stake_2_wins": item[7],
-                    "url": url,
-                    "category": category}
-            
-            elif bet_outcomes == 'three-way': 
-                # if invalid data - skip 
-                if len(item) < 10 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
-                    errors.append("Totolotek: Error appending - " + " | ".join(item))
-                    continue
+                    # append item
+                    dct = {"game_datetime": game_datetime,
+                        "team_1": item[0],
+                        "team_2": item[1],
+                        "stake_1_wins": item[5],
+                        "stake_draw": np.inf,
+                        "stake_2_wins": item[7],
+                        "url": url,
+                        "category": category}
+                
+                elif bet_outcomes == 'three-way': 
+                    # if invalid data - skip 
+                    if len(item) < 10 or not item[5].replace(".", "").isnumeric() or not item[7].replace(".", "").isnumeric() or not item[9].replace(".", "").isnumeric():
+                        errors.append("Totolotek: Error appending - " + " | ".join(item))
+                        continue
 
-                # append item
-                dct = {"game_datetime": game_datetime,
-                    "team_1": item[0],
-                    "team_2": item[1],
-                    "stake_1_wins": item[5],
-                    "stake_draw": item[7],
-                    "stake_2_wins": item[9],
-                    "url": url,
-                    "category": category}
+                    # append item
+                    dct = {"game_datetime": game_datetime,
+                        "team_1": item[0],
+                        "team_2": item[1],
+                        "stake_1_wins": item[5],
+                        "stake_draw": item[7],
+                        "stake_2_wins": item[9],
+                        "url": url,
+                        "category": category}
 
-            df = df._append(pd.DataFrame(
-                [dct], columns=columns), ignore_index=True)
+                df = df._append(pd.DataFrame(
+                    [dct], columns=columns), ignore_index=True)
+                
+            except Exception:
+                errors.append("Totolotek: Element 'stale', skipped")
+                continue
+
 
     # close chrome
     driver.quit()

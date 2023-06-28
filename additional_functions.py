@@ -9,28 +9,24 @@ def create_report_sheet(df):
     group_sizes = df.groupby(['game_datetime', 'category', 'team_1', 'team_2']).size().reset_index(name='group_size')
     df_merged = pd.merge(df1, group_sizes, on=['game_datetime', 'category', 'team_1', 'team_2']).drop_duplicates()
     
-    # Count the occurrences of each value in the 'column_name' column
-    value_counts = df_merged['game_datetime'].value_counts()
-
-    # Get the values that occur more than once (i.e., not unique)
-    not_unique_values = value_counts[value_counts > 1].index
-
-    # Filter the DataFrame by keeping only the rows with values that are not unique
-    filtered_df = df_merged[df_merged['game_datetime'].isin(not_unique_values)]
+    # Filter rows where values in 'Column1' and 'Column2' are not unique
+    filtered_df = df_merged[df_merged.duplicated(subset=['game_datetime', 'category'], keep=False)]
+    filtered_df.reset_index(drop=True, inplace=True)
 
     # Create a new DataFrame to store the updated rows
-    updated_df = pd.DataFrame(columns=filtered_df.columns)
+    updated_df = pd.DataFrame()
 
     # Iterate over each row in the original DataFrame
-    for i in range(len(filtered_df)):
-        row = filtered_df.iloc[i]
+    for index, row in filtered_df.iterrows():
+        # Append the current row to the updated DataFrame
         updated_df = updated_df._append(row)
-        
-        # Check if the value in 'column_name' changes compared to the next row
-        if i < len(filtered_df) - 1 and row['game_datetime'] != filtered_df.iloc[i + 1]['game_datetime']:
-            empty_row = pd.Series({}, name='empty_row')
-            updated_df = updated_df._append(empty_row)
-            
+
+        # Check if the value in 'Column_Name' changes compared to the next row
+        if index < filtered_df.shape[0] - 1 and row['game_datetime'] != filtered_df.loc[index + 1, 'game_datetime']: #and row['game_datetime'] != None and row['game_datetime'] != None :
+            # Append an empty row to the updated DataFrame
+            empty_row = pd.Series([None] * len(filtered_df.columns), index=filtered_df.columns)
+            updated_df = updated_df._append(empty_row, ignore_index=True)
+
     # Reset the index of the updated DataFrame
     updated_df.reset_index(drop=True, inplace=True)
     
