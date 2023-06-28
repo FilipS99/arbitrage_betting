@@ -21,10 +21,13 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
                 r'baraż / PF',
                 r'baraż / Finał',
                 r'U20',
+                r'U21',
                 r'\[K\]',
                 r'\[WOM\]',
                 r'-',
                 r'/',
+                r'"',
+                r',',
                 r' ',]  
 
     for pattern in patterns:
