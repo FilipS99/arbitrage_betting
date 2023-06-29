@@ -20,15 +20,15 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
                 r'baraż / PF / Rozszerzona oferta LIVE',
                 r'baraż / PF',
                 r'baraż / Finał',
-                r'U20',
-                r'U21',
+                r'U\d{2}',
                 r'\[K\]',
                 r'\[WOM\]',
                 r'-',
                 r'/',
                 r'"',
+                r"'",
                 r',',
-                r' ',]  
+                r' ']  
 
     for pattern in patterns:
         df['team_1'] = df['team_1'].str.replace(pattern, '', flags=re.IGNORECASE, regex=True)
