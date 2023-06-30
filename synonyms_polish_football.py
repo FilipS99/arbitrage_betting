@@ -1000,6 +1000,8 @@ synonyms_polish_football = {
     'VARSOVIAWWA': 'ESCOLAVARSOVIAWARSZAWA',
     'V.WRZEŚNIA': 'VICTORIAWRZEŚNIA',
     'WRZEŚNIA': 'VICTORIAWRZEŚNIA',
+    'KARVINA': 'MFKKARWINA',
+    'LIVEREC': 'SLOVANLIBEREC',
 
     '': ''
     # polish football
