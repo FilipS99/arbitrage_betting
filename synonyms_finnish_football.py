@@ -93,6 +93,7 @@ synonyms_finnish_football = {
     'PK35': 'PK35HELSINKI',
     'PK35K.': 'PK35HELSINKI',
     'PK35VANTAA': 'PK35HELSINKI',
+    'KPK35VANTAA': 'PK35HELSINKI',
     'PK35HELSINKIK.': 'PK35HELSINKI',
     'PALLOKERHO35RY': 'PK35HELSINKI',
     'EPS': 'ESPOONPALLOSEURA',
@@ -110,6 +111,7 @@ synonyms_finnish_football = {
     'OTPOULU': 'OLSOULU',
     'OULUNLUISTINSEURA': 'OLSOULU',
     'ONSK.': 'OLSOULU',
+    'KONSOULU': 'OLSOULU',
     'OULU': 'ACOULU',
     'EIF': 'EKENASIF',
     'EKANAS': 'EKENASIF',
@@ -148,7 +150,7 @@ synonyms_finnish_football = {
     'HPSK.': 'HPS',
     'TPS': 'TPSK.',
     'ÅLANDUTDK.': 'AALANDUTD',
-    
+
 
     # finnish football
 }

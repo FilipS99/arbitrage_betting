@@ -20,6 +20,8 @@ from calculate_bets_outcomes import calculate_bets_outcomes
 from additional_functions import create_report_sheet
 
 # overriding Thread so I can access outputs
+
+
 class ScrapeThread(threading.Thread):
     def __init__(self, target_func):
         super().__init__()
@@ -34,7 +36,8 @@ if __name__ == "__main__":
     start_time = time.time()
     # save CSV file
     filename_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = 'D:\\moje\python_projects\\arbitrage_betting\\output\\'
+    output_path = 'D:\\Edukacja\\Projekty\\arbitrage_betting\\output\\'
+    # output_path = 'D:\\moje\python_projects\\arbitrage_betting\\output\\'
     bet_amount = 1000
 
     # setup
@@ -54,19 +57,18 @@ if __name__ == "__main__":
     thread_totalbet = ScrapeThread(target_func=scrape_totalbet)
 
     # Define the list of threads
-    threads = [ 
-                'thread_etoto', 'thread_sts', 'thread_betclic', 'thread_lvbet', 
-                'thread_fortuna','thread_superbet', 'thread_fuksiarz', 'thread_totolotek', 
-                'thread_forbet', 'thread_betfan', 'thread_totalbet' 
-              ]
-    
-    
+    threads = [
+        'thread_etoto', 'thread_sts', 'thread_betclic', 'thread_lvbet',
+        'thread_fortuna', 'thread_superbet', 'thread_fuksiarz', 'thread_totolotek',
+        'thread_forbet', 'thread_betfan', 'thread_totalbet'
+    ]
+
     # start threads with delay
     for thread in threads:
         globals()[thread].start()
         time.sleep(4)
 
-    # join threads 
+    # join threads
     for thread in threads:
         globals()[thread].join()
 
@@ -85,7 +87,8 @@ if __name__ == "__main__":
             thread_df, thread_errors = thread_result
 
             # append category_size_per_page
-            category_size_per_page[thread] = thread_df.groupby(['category']).size()
+            category_size_per_page[thread] = thread_df.groupby(
+                ['category']).size()
 
             # append main data DataFrame
             df = pd.concat([df, thread_df])
@@ -97,23 +100,28 @@ if __name__ == "__main__":
     # print category_size_per_page
     print(category_size_per_page)
 
-    # replace synonyms 
-    df = rename_synonyms(df)
+    # replace synonyms
+    df_renamed = rename_synonyms(df)
 
     # sorting
-    df = df.sort_values(by=['category', 'game_datetime', 'team_1', 'team_2'], ascending=[True, True, True, True])
- 
+    df_renamed = df_renamed.sort_values(by=['category', 'game_datetime',
+                                            'team_1', 'team_2'], ascending=[True, True, True, True])
+
     # generate all possible bets combinations
-    calculate_bets_outcomes(df, bet_amount, output_path, filename_datetime)
+    calculate_bets_outcomes(df_renamed, bet_amount,
+                            output_path, filename_datetime)
 
     # Create an ExcelWriter object with the desired file path
     writer = pd.ExcelWriter(output_path+filename_datetime+"_scraped.xlsx")
 
-    report_df = create_report_sheet(df)
+    report_df = create_report_sheet(df_renamed)
     report_df.to_excel(writer, sheet_name='Report', header=True, index=False)
 
+    # Write pre renamed values
+    df.to_excel(writer, sheet_name='Scraped_raw', header=True, index=False)
+
     # Write df to the second sheet
-    df.to_excel(writer, sheet_name='Scraped', header=True, index=False)
+    df_renamed.to_excel(writer, sheet_name='Scraped', header=True, index=False)
 
     # Save the Excel file
     writer._save()
@@ -121,10 +129,8 @@ if __name__ == "__main__":
     # # save scraped data
     # df.to_excel(,
     #             header=True, index=False)
-    
+
     end_time = time.time()
     execution_time = end_time - start_time
 
     print("\nExecution time:", round(execution_time, 2), "seconds")
-
-
