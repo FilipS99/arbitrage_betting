@@ -36,8 +36,8 @@ if __name__ == "__main__":
     start_time = time.time()
     # save CSV file
     filename_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = 'D:\\Edukacja\\Projekty\\arbitrage_betting\\output\\'
-    # output_path = 'D:\\moje\python_projects\\arbitrage_betting\\output\\'
+    # output_path = 'D:\\Edukacja\\Projekty\\arbitrage_betting\\output\\'
+    output_path = 'D:\\moje\python_projects\\arbitrage_betting\\output\\'
     bet_amount = 1000
 
     # setup
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 print(error)
 
     # print category_size_per_page
-    print(category_size_per_page)
+    print("\n", category_size_per_page)
 
     # replace synonyms
     df_renamed = rename_synonyms(df)

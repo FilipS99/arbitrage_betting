@@ -18,6 +18,7 @@ def rename_synonyms(df: pd.DataFrame) -> pd.DataFrame:
                 r'\(KOBIETY\)',
                 r'\(HIT DNIA\)',
                 r'baraż / PF / Rozszerzona oferta LIVE',
+                r'\(najwyższe kursy, 0% marży!\)',
                 r'baraż / PF',
                 r'baraż / Finał',
                 r'U\d{2}',

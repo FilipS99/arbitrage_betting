@@ -624,7 +624,6 @@ synonyms_tennis = {
     'STANKOVICA.': 'STANKOVICANJA',
     'M.MATOULA': 'MATOULAMARTHA',
     'MATOULAM.': 'MATOULAMARTHA',
-<<<<<<< HEAD
     'E.SEIDEL': 'ELLASEIDEL',
     'M.HELGO': 'HELGOMALENE',
     'ARTNAKB.': 'BORARTNAK',
@@ -693,7 +692,6 @@ synonyms_tennis = {
     'MOCHIZUKIS.': 'S.MOCHIZUKI',
     'D.GALFI': 'GALFID.',
     'L.NOSKOVA': 'NOSKOVAL.',
-=======
     'KSENIJATIHOMIROVA': 'TIHOMIROVAKSENIJA',
     'N.RADISIC': 'NIKARADISIC',
     'D.PAVLOU': 'DIMITRAPAVLOU',
@@ -806,7 +804,6 @@ synonyms_tennis = {
     '': '',
     '': '',
     '': '',
->>>>>>> c6dac4f0159359489eda5f97bf0431dc8c5d99a7
 
 
 

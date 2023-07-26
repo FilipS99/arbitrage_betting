@@ -113,14 +113,11 @@ synonyms_finnish_football = {
     'OTPOULU': 'OLSOULU',
     'OULUNLUISTINSEURA': 'OLSOULU',
     'ONSK.': 'OLSOULU',
-<<<<<<< HEAD
+    'KONSOULU': 'OLSOULU',
+    'OULU': 'ACOULU',
     'OULU': 'OLSOULU',
     'ACOULU': 'OLSOULU',
     'OTPOULU': 'OLSOULU',
-=======
-    'KONSOULU': 'OLSOULU',
-    'OULU': 'ACOULU',
->>>>>>> c6dac4f0159359489eda5f97bf0431dc8c5d99a7
     'EIF': 'EKENASIF',
     'EKANAS': 'EKENASIF',
     'TAMPEREUTD': 'TAMPEREUNITED',
@@ -159,12 +156,7 @@ synonyms_finnish_football = {
     'HPSK.': 'HPS',
     'TPS': 'TPSK.',
     'ÅLANDUTDK.': 'AALANDUTD',
-<<<<<<< HEAD
-    'ALANDUNITED': 'AALANDUTD',
-    
-=======
-
->>>>>>> c6dac4f0159359489eda5f97bf0431dc8c5d99a7
+    'ALANDUNITED': 'AALANDUTD'
 
     # finnish football
 }

@@ -40,10 +40,17 @@ def scrape_betclic() -> Tuple[pd.DataFrame, list]:
     options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
-    # driver.implicitly_wait(1)
+    driver.implicitly_wait(1)
 
     driver.get('https://www.betclic.pl/')
     time.sleep(3)
+
+    # Cookies button
+    button_element = driver.find_elements(By.ID, "popin_tc_privacy_button_2")  
+
+    # Click the button
+    if len(button_element) > 0: 
+        button_element[0].click()
 
     # scrape dynamic pages
     for discipline_name, discipline_subtype, category, bet_outcomes in dynamic_links:
@@ -214,9 +221,24 @@ def scrape_page_items(driver, category, bet_outcomes):
 
                     # event data
                     team_1 = event.find_elements(By.XPATH, ".//*[contains(@class, 'scoreboard_contestant-1')]")
+                    if len(team_1) == 0:
+                        errors.append("BetClic: Team 1 name not found: " + " | ".join(event.text.split('\n')))
+                        continue
+
                     team_2 = event.find_elements(By.XPATH, ".//*[contains(@class, 'scoreboard_contestant-2')]")
+                    if len(team_2) == 0:
+                        errors.append("BetClic: Team 2 name not found: " + " | ".join(event.text.split('\n')))
+                        continue
+
                     bet_odds = event.find_elements(By.XPATH, ".//*[contains(@class, 'oddValue')]")
+                    if len(bet_odds) == 0:
+                        errors.append("BetClic: bet odds not found: " + " | ".join(event.text.split('\n')))
+                        continue
+
                     event_time = event.find_elements(By.XPATH, ".//*[contains(@class, 'scoreboard_hour')]")
+                    if len(event_time) == 0:
+                        errors.append("BetClic: event time not found: " + " | ".join(event.text.split('\n')))
+                        continue
 
                     # validate data
                     numeric_pattern = re.compile(r'^[-+]?[0-9]+(\.[0-9]+)?$')
@@ -311,4 +333,6 @@ def deactivate_dropdown_list(driver, action_chains, element):
 
 # df = pd.DataFrame()
 # df, errors = scrape_betclic()
+# for error in errors:
+#     print(error)
 # print(df.groupby(['category']).size())

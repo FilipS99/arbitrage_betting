@@ -37,7 +37,7 @@ def scrape_forbet() -> Tuple[pd.DataFrame, list]:
     options.add_argument("--start-maximized")
     options.add_argument('--ignore-certificate-errors')
     driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(3)
+    driver.implicitly_wait(1)
 
     for link in links:
         # unpack tuple
@@ -56,7 +56,7 @@ def scrape_forbet() -> Tuple[pd.DataFrame, list]:
 
         # scrape sections
         sections = driver.find_elements(
-            By.XPATH, '/html/body/div[1]/div/div/main/div[2]/div/div/div/div[1]/section/div/section[*]/div/section')
+            By.XPATH, '/html/body/div[*]/div/div/main/div[*]/div/div/div/div[1]/section/div/section[*]/div/section')
 
         for section in sections:
             scroll_into_view(driver, section, sleep=0)
@@ -68,9 +68,8 @@ def scrape_forbet() -> Tuple[pd.DataFrame, list]:
             # get elements
             elements = section.find_elements(By.XPATH, './div[*]')
 
-            for index, element in enumerate(elements):
-                scroll_into_view(driver, elements[min(
-                    index+5, len(elements)-1)], sleep=0)
+            for element in elements:
+                scroll_into_view(driver, element, sleep=0)
 
                 item = element.text.split('\n')
                 teams = item[1].split(' - ')
@@ -138,5 +137,6 @@ def scrape_forbet() -> Tuple[pd.DataFrame, list]:
 # # # test
 
 # df = pd.DataFrame()
-# df = df._append(scrape_forbet(), ignore_index=True)
-# print(df.head())
+# df, errors = scrape_forbet()
+# print(errors)
+# print(len(df))

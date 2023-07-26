@@ -35,7 +35,7 @@ def scrape_etoto() -> Tuple[pd.DataFrame, list]:
     driver.get(url)
     
     # in case of 'stale' elements
-    # time.sleep(3)
+    time.sleep(1)
 
     # (discipline_name, subtype, bet_outcomes, category
     disciplines_data = [
