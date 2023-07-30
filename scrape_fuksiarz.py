@@ -37,10 +37,8 @@ def scrape_fuksiarz() -> Tuple[pd.DataFrame, list]:
     # in case of 'stale' elements
     time.sleep(1)
 
-    # Cookies button
+    # Click Cookies button
     button_element = driver.find_elements(By.ID, "onetrust-accept-btn-handler")  
-
-    # Click the button
     if len(button_element) > 0: 
         button_element[0].click()
 

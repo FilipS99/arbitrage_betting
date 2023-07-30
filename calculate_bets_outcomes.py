@@ -82,6 +82,8 @@ def calculate_bets_outcomes(df: pd.DataFrame, amount: float, output_path: str, f
 
     df_new[columns_to_round] = df_new[columns_to_round].round(2)
 
+    df_new = df_new.drop_duplicates()
+    
     # save CSV file
     df_new.to_excel(output_path+filename+"_bets.xlsx",
                     header=True, index=False)
